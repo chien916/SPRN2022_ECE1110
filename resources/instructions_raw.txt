@@ -1,0 +1,10 @@
+add		r1	r2
+addi	r3	-1500
+addui	r4	1000
+sub		r1	r3
+lw		r5	r3
+sw		r7	r0
+halt
+bz		r1	1000
+bp		r6	-100
+put		r10
