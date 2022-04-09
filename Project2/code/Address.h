@@ -5,6 +5,8 @@
 #ifndef CODE_ADDRESS_H
 #define CODE_ADDRESS_H
 
+#include "Include.h"
+
 class Address {
 private:
     uint32_t address_val;

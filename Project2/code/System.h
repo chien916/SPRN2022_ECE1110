@@ -1,8 +1,8 @@
 #ifndef CODE_SYSTEM_H
 #define CODE_SYSTEM_H
 
-#POLICY_RBRA 1
-#POLICY_RTNWA 2
+#define POLICY_RBRA 1
+#define POLICY_RTNWA 2
 
 
 

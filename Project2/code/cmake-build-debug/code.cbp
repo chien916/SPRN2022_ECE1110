@@ -82,13 +82,16 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/cache.h">
+		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/Cache.h">
+			<Option target="code"/>
+		</Unit>
+		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/Include.h">
+			<Option target="code"/>
+		</Unit>
+		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/System.h">
 			<Option target="code"/>
 		</Unit>
 		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/main.cpp">
-			<Option target="code"/>
-		</Unit>
-		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/system.h">
 			<Option target="code"/>
 		</Unit>
 		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/CMakeLists.txt">

@@ -3,4 +3,4 @@ project(code)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(code main.cpp cache.h system.h)
+add_executable(code main.cpp Cache.h System.h Include.h)

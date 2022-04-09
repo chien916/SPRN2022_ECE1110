@@ -5,6 +5,8 @@
 #ifndef CODE_DATABLOCK_H
 #define CODE_DATABLOCK_H
 
+#include "Include.h"
+
 template<size_t SZ_TAG_BITS, size_t SZ_DATA_BYTES>
 class _DATA_BLOCK {
 private:
