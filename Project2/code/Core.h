@@ -10,17 +10,16 @@
 
 class Core {
 	const std::unordered_map<std::string, uint8_t> instr_param_map{
-			{"con", 2},//	[CACHE_COUNT]	[BLOCK_SIZE]	[POLICY_NUM]	-Set Configurations
-			{"inc", 1},// [CACHE_NUMBER]									-Initialize Cache
-			{"scd", 3},//	[CACHE_NUMBER]	[TOTAL_SIZE]	[SET_ASSOC]		-Set Cache Size and Set Assoc
-			{"scl", 2},//	[CACHE_NUMBER]	[LATENCY]						-Set Cache Latency
-			{"pch", 1},//	[CACHE_NUMBER]									-Print Cache Hit Rate
-			{"pcm", 1},//	[CACHE_NUMBER]									-Print Cache Miss Rate
-			{"ins", 3},//													-Initialize System
-			{"rat", 3},//  [ADDRESS]		[ARR_TIME]						-Read Address at Time
-			{"wat", 3},//  [ADDRESS]		[ARR_TIME]						-Write Address at Time
-			{"hap", 3},//													-Halt Process
-
+			{"CON", 2},//	[CACHE_COUNT]	[BLOCK_SIZE]	[POLICY_NUM]	-Set Configurations
+			{"INC", 1},// 	[CACHE_NUMBER]									-Initialize Cache
+			{"SCD", 3},//	[CACHE_NUMBER]	[TOTAL_SIZE]	[SET_ASSOC]		-Set Cache Size and Set Assoc
+			{"SCL", 2},//	[CACHE_NUMBER]	[LATENCY]						-Set Cache Latency
+			{"PCH", 1},//	[CACHE_NUMBER]									-Print Cache Hit Rate
+			{"PCM", 1},//	[CACHE_NUMBER]									-Print Cache Miss Rate
+			{"INS", 0},//													-Initialize System
+			{"RAT", 2},//  	[ADDRESS]		[ARR_TIME]						-Read Address at Time
+			{"WAT", 2},//  	[ADDRESS]		[ARR_TIME]						-Write Address at Time
+			{"HAP", 0},//													-Halt Process
 	};
 	std::ofstream ofs;
 	std::ifstream ifs;
