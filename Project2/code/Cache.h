@@ -143,9 +143,9 @@ public:
 
 	/*
 	 * To access individual element from cache array, do the following:
-	 * cache.at(A).at(B).getValid() access Cache[A][B].Valid - bool type is returned
-	 * cache.at(A).at(B).getDirty() access Cache[A][B].Dirty - bool type is returned
-	 * cache.at(A).at(B).getTag() access Cache[A][B].Tag - uint32_t type is returned
+	 * this->cache_array.at(A).at(B).getValid() access Cache[A][B].Valid - bool type is returned
+	 * this->cache_array.at(A).at(B).getDirty() access Cache[A][B].Dirty - bool type is returned
+	 * this->cache_array.at(A).at(B).getTag() access Cache[A][B].Tag - uint32_t type is returned
 	 */
 	void printCacheImage() {
 		if (!this->ready.at(7))
