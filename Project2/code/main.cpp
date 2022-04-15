@@ -1,9 +1,4 @@
-//#include "Cache.h"
-//#include "Tester.h"
-#include <iostream>
-#include <fstream>
-//#include <string>
-#include <vector>
+#include "Include.h"
 using namespace std;
 int main() {
     /*
@@ -21,7 +16,7 @@ int main() {
         return -1;
     }
 
-    //get the number of caches:
+    //get the number of cache_system:
     int numCache;
     infile >> numCache;
 
