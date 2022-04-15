@@ -14,13 +14,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6fd31d6a-bd5e-48ca-8393-a803f6ecc3bd" name="Default Changelist" comment="">
+    <list default="true" id="6fd31d6a-bd5e-48ca-8393-a803f6ecc3bd" name="Default Changelist" comment="Cache Javadocs finished">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cache.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cache.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DataBlock.h" beforeDir="false" afterPath="$PROJECT_DIR$/DataBlock.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Include.h" beforeDir="false" afterPath="$PROJECT_DIR$/Include.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/System.h" beforeDir="false" afterPath="$PROJECT_DIR$/System.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Tester.h" beforeDir="false" afterPath="$PROJECT_DIR$/Tester.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/code.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/code.cbp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,6 +77,11 @@
         <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="code" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="code" TARGET_NAME="code" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="code" RUN_TARGET_NAME="code">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -99,6 +108,14 @@
       <workItem from="1649727428814" duration="11421000" />
       <workItem from="1649894335609" duration="40608000" />
     </task>
+    <task id="LOCAL-00001" summary="Cache Javadocs finished">
+      <created>1650056315287</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1650056315287</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -114,6 +131,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Cache Javadocs finished" />
+    <option name="LAST_COMMIT_MESSAGE" value="Cache Javadocs finished" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

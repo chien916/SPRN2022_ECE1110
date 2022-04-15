@@ -20,5 +20,6 @@
 #include <iostream>
 #include <set>
 #include <iomanip>
+#include <functional>
 
 #endif //CODE_INCLUDE_H

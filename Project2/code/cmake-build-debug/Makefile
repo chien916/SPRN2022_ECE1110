@@ -128,6 +128,30 @@ code/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\code.dir\build.make CMakeFiles/code.dir/build
 .PHONY : code/fast
 
+Process.obj: Process.cpp.obj
+.PHONY : Process.obj
+
+# target to build an object file
+Process.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\code.dir\build.make CMakeFiles/code.dir/Process.cpp.obj
+.PHONY : Process.cpp.obj
+
+Process.i: Process.cpp.i
+.PHONY : Process.i
+
+# target to preprocess a source file
+Process.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\code.dir\build.make CMakeFiles/code.dir/Process.cpp.i
+.PHONY : Process.cpp.i
+
+Process.s: Process.cpp.s
+.PHONY : Process.s
+
+# target to generate assembly for a file
+Process.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\code.dir\build.make CMakeFiles/code.dir/Process.cpp.s
+.PHONY : Process.cpp.s
+
 main.obj: main.cpp.obj
 .PHONY : main.obj
 
@@ -161,6 +185,9 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... code
+	@echo ... Process.obj
+	@echo ... Process.i
+	@echo ... Process.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s

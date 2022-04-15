@@ -55,7 +55,7 @@ private:
 	 * use (*global_writer).operator<<() to write
 	 * e.g. (*global_writer)<<("THINGS TO WRITE")<<std::endl;
 	 */
-	std::shared_ptr<std::ofstream> global_writer;//#8
+	std::shared_ptr<std::ofstream> global_writer;
 
 	//Status of Initialization. All Members MUST be true before Cache Initialization
 	std::array<bool, 9> ready{false, false, false, false, false, false, false, false, false};
@@ -122,17 +122,17 @@ public:
 	 * Apply algorithms to find the correct Dimensions, Address Partitions of Cache.
 	 * Mark Dimensions and Address Partitions has been set in Ready
 	 * Warning: It does NOT initialize the Cache
-	 * @param block_size Number of Bytes that Each DataBlock can hold
-	 * @param total_size Total Number of Bytes this Cache needs to Store
-	 * @param set_assoc Number of DataBlock for a Each Given Index
+	 * @param _block_size Number of Bytes that Each DataBlock can hold
+	 * @param _total_size Total Number of Bytes this Cache needs to Store
+	 * @param _set_assoc Number of DataBlock for a Each Given Index
 	 */
-	void setParam(const uint32_t &block_size, const uint32_t &total_size, const uint32_t &set_assoc) {
-		uint32_t num_of_cache_block = (total_size / block_size / set_assoc);
-		std::get<0>(this->dimensions) = block_size;//Number of bytes each data-block can hold
-		std::get<1>(this->dimensions) = set_assoc;//Number of data-blocks does one index maps to
+	void setParam(const uint32_t &_block_size, const uint32_t &_total_size, const uint32_t &_set_assoc) {
+		uint32_t num_of_cache_block = (_total_size / _block_size / _set_assoc);
+		std::get<0>(this->dimensions) = _block_size;//Number of bytes each data-block can hold
+		std::get<1>(this->dimensions) = _set_assoc;//Number of data-blocks does one index maps to
 		std::get<2>(this->dimensions) = num_of_cache_block;//Number of cache-blocks does cache-array have
 		this->ready.at(3) = true;
-		std::get<2>(this->address_partition) = lround(log2l(block_size));//Bits of Offset
+		std::get<2>(this->address_partition) = lround(log2l(_block_size));//Bits of Offset
 		std::get<1>(this->address_partition) = lround(log2l(num_of_cache_block));//Bits of Index
 		std::get<0>(this->address_partition) =
 				32 - std::get<2>(this->address_partition) - std::get<1>(this->address_partition);//Bits of Tag

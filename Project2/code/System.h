@@ -8,25 +8,44 @@
 class System {
 
 private:
-	// Total latency:
+	//Number of Clock Cycles the System has Passed (No need to initialize)
 	uint64_t time_count{0};
 
+	/* #0: Policy Number this System should Implement
+	 * false : Write-Back + Write-Allocate
+	 *
+	 * true : Write-Thru + Non-Write-Allocate
+	 */
+	bool read_write_policy{false};
 
-	// System-level configurable parameters:
-	bool read_write_policy{false};//#0
-	size_t cache_count{0};//#1
-	uint32_t block_size{0};//#2
+	//#1: Number of Cache Layers in this System
+	size_t cache_count{0};
 
-	// The cache objects:
-	std::shared_ptr<Cache> top_cache_ptr;//#3
+	//#2: Number of Bytes each DataBlock should hold (Each cache has a copy of this)
+	uint32_t block_size{0};
 
-	// Memory:
+	//#3: Pointer of Top Cache (Second-top layer cache\memory has a copy of this)
+	std::shared_ptr<Cache> top_cache_ptr;
+
+	//#4: Total Clock Cycles Needed to Complete (Each cache has a copy of this)
 	uint64_t memory_latency{0};//#4
 
-	std::shared_ptr<std::ofstream> global_writer;//#5
+	/* #5 Pointer of File Writer
+	 *
+	 * use (*global_writer).operator<<() to write
+	 * e.g. (*global_writer)<<("THINGS TO WRITE")<<std::endl;
+	 */
+	std::shared_ptr<std::ofstream> global_writer;
 
-	std::array<bool, 6> ready{false, false, false, false, false, false};//0 means ready
+	//Status of Initialization. All Members MUST be true before System Initialization
+	std::array<bool, 6> ready{false, false, false, false, false, false};
 
+	std::multiset<>
+	/**
+	 * Retrieve the Pointer of Cache of Specific Level
+	 * @param _cache_level Cache Level of Cache Wanted (Top Cache being 1)
+	 * @return The Retrieved Pointer of Cache
+	 */
 	std::shared_ptr<Cache> getCacheAtPtr(const uint32_t &_cache_level) {
 		if (_cache_level > this->cache_count)
 			throw std::out_of_range("ERR Cache Level Out-of-range");
@@ -40,10 +59,18 @@ private:
 	}
 
 public:
-	//setter functions for configurable parameters:
 
+	/**
+	 * con	[CACHE_COUNT]	[BLOCK_SIZE]	[POLICY_NUM]	-Set Configurations
+	 * Perform Format Check for Policy Number
+	 * Mark Cache Count, Block Size, Policy Number as Ready
+	 * Warning: Policy number MUST be EITHER 1 OR 2
+	 * @param _cache_count Number of Cache Layers in this System
+	 * @param _block_size Number of Bytes that Each DataBlock can hold
+	 * @param _policy_num Policy Number this System should Implement
+	 * @return True if Instruction Ran without Errors, false otherwise
+	 */
 	bool setConfig(const uint32_t &_cache_count, const uint32_t &_block_size, const uint32_t &_policy_num) {
-		//Set Global Parameters:
 		if (_policy_num < 1 || _policy_num > 2)
 			throw std::runtime_error("ERR Policy Number Unrecognized");
 		else if (_policy_num == 1)
@@ -55,35 +82,70 @@ public:
 		this->ready.at(1) = true;
 		this->block_size = _block_size;
 		this->ready.at(2) = true;
+		return true;
 	}
 
-
-	bool setCacheParam(const uint32_t &_cache_level, const uint32_t &_total_size, const uint32_t &_set_assoc) {
+	/**
+	 * scd	[CACHE_NUMBER]	[TOTAL_SIZE]	[SET_ASSOC]		-Set Cache Size and Set Assoc
+	 * Perform Bound Checks for Cache Level
+	 * Warning: Function will Mark Ready in Cache, not System
+	 * @param _cache_level The level(index) of cache with lowest being 1
+	 * @param _total_size Total Number of Bytes this Cache needs to Store
+	 * @param _set_assoc Number of DataBlock for a Each Given Index
+	 * @return True if Instruction Ran without Errors, false otherwise
+	 */
+	bool setCacheDimension(const uint32_t &_cache_level, const uint32_t &_total_size, const uint32_t &_set_assoc) {
 		if (_cache_level > this->cache_count) return false;
 		if (block_size == 0) return false;
 		getCacheAtPtr(_cache_level - 1)->setParam(block_size, _total_size, _set_assoc);
 		return true;
 	}
 
+
+	/**
+	 * scl	[CACHE_NUMBER]	[LATENCY]						-Set Cache Latency
+	 * Perform Bound Checks for Cache Level
+	 * Warning: Function will Mark Ready in Cache, not System
+	 * @param _cache_level The level(index) of cache with lowest being 1
+	 * @param _latency Number of Clock Cycles to Complete Read for this Cache
+	 * @return True if Instruction Ran without Errors, false otherwise
+	 */
 	bool setCacheLatency(const uint32_t &_cache_level, const uint32_t &_latency) {
 		if (_cache_level > this->cache_count) return false;
 		this->getCacheAtPtr(_cache_level - 1)->setLatency(_latency);
 		return true;
 	}
 
-
+	/**
+	 * sml	[LATENCY]										-Set Memory Latency
+	 * Mark Memory Latency as Ready
+	 * Warning: This Function does NOT Set Memory Latency in Cache Array
+	 * @param _latency
+	 * @return True if Instruction Ran without Errors, false otherwise
+	 */
 	bool setMemoryLatency(const uint32_t &_latency) {
 		this->memory_latency = _latency;
 		this->ready.at(4) = true;
 		return true;
 	}
 
+	/**
+	 * Set the Pointer of File Writer
+	 * Mark Pointer of File Writer as Ready
+	 * @param _global_writer Pointer of File Writer
+	 * @return True if Instruction Ran without Errors, false otherwise
+	 */
 	bool setWriterPtr(const std::shared_ptr<std::ofstream> &_global_writer) {
 		this->global_writer = _global_writer;
 		this->ready.at(5) = true;
 		return true;
 	}
 
+	/**
+	 * inc	[CACHE_NUMBER]									-Initialize Cache
+	 * @param _cache_level The level(index) of cache with lowest being 1
+	 * @return True if Instruction Ran without Errors, false otherwise
+	 */
 	bool initCache(const uint32_t &_cache_level) {
 		if (_cache_level > this->cache_count) return false;
 		std::shared_ptr<Cache> this_cache_ptr = this->getCacheAtPtr(_cache_level - 1);
