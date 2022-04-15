@@ -13,7 +13,7 @@ private:
 
 
 	// System-level configurable parameters:
-	std::pair<bool, bool> read_write_policy;//#0
+	bool read_write_policy{false};//#0
 	size_t cache_count{0};//#1
 	uint32_t block_size{0};//#2
 
@@ -44,11 +44,12 @@ public:
 
 	bool setConfig(const uint32_t &_cache_count, const uint32_t &_block_size, const uint32_t &_policy_num) {
 		//Set Global Parameters:
-		if (_policy_num < 0 || _policy_num > 3)
+		if (_policy_num < 1 || _policy_num > 2)
 			throw std::runtime_error("ERR Policy Number Unrecognized");
-		std::bitset<2> policy_helper(_policy_num);
-		this->read_write_policy.first = policy_helper.test(0);
-		this->read_write_policy.second = policy_helper.test(1);
+		else if (_policy_num == 1)
+			this->read_write_policy = false;
+		else if (_policy_num == 2)
+			this->read_write_policy = true;
 		this->ready.at(0) = true;
 		this->cache_count = _cache_count;
 		this->ready.at(1) = true;
@@ -91,92 +92,11 @@ public:
 		else if (_cache_level > 1)
 			this_cache_ptr->setChild(this->getCacheAtPtr(_cache_level));
 		this_cache_ptr->initCacheArray();
+		this_cache_ptr->setId(_cache_level);
 		return true;
 	}
 
 
-
-
-	//Constructors:
-
-	//Read from instruction file:
-/*	bool readInstr(string);*/
-
-/*	//getter functions for configurable parameters:
-	unsigned int getNumCache() const;
-
-	unsigned int getPolicy() const;
-
-	unsigned int getBlockSize() const;
-
-	unsigned long long getCacheSize(const uint32_t &) const;
-
-	unsigned int getLatencies(const uint32_t &) const;
-
-	unsigned int getAssociativity(const uint32_t &) const;
-
-	//getter functions for system outputs:
-	int getTime() const;
-
-	vector<float> getHitRates() const;
-
-	vector<float> getMissRates() const;
-
-	vector<vector<int>> getImages() const;*/
-
-/*
-unsigned int System::getBlockSize() const {
-	return this->block_size;
-}
-
-unsigned int System::getCacheSize(const uint32_t &level) const {
-	return cache_system[level - 1].getCacheSZ();
-}
-
-unsigned int System::getLatencies(const uint32_t &level) const {
-	return cache_system[level - 1].getLatency();
-}
-
-unsigned int System::getAssociativity(const uint32_t &level) const {
-	return cache_system[level - 1].getAsso();
-}
-
-unsigned int System::getTime() const {
-	return time;
-}
-
-unsigned int System::getNumCache() const {
-	return numCache;
-}
-
-unsigned int System::getPolicy() const {
-	return policy;
-}
-
-vector<float> System::getHitRates() const {
-	vector<float> rates;
-	for (int i = 0; i < numCache; i++) {
-		rates.push_back(cache_system[i].getHitRate());
-	}
-	return rates;
-}
-
-vector<float> System::getMissRates() const {
-	vector<float> rates;
-	for (int i = 0; i < numCache; i++) {
-		rates.push_back(cache_system[i].getMissRate());
-	}
-	return rates;
-}
-
-vector<vector<int>> System::getImages() const {
-	vector<vector<int>> images;
-	for (int i = 0; i < numCache; i++) {
-		images.push_back(cache_system[i].getImage());
-	}
-	return images;
-}
-*/
 };
 
 #endif //CODE_SYSTEM_H

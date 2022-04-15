@@ -45,6 +45,14 @@ public:
 		return this->dirty;
 	}
 
+	bool getValid() const{
+		return this->valid;
+	}
+
+	uint32_t getTag() const{
+		return this->tag;
+	}
+
 
 };
 
