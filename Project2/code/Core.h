@@ -11,16 +11,16 @@
 class Core {
 	const std::unordered_map<std::string, uint8_t> instr_param_map{
 			{"con", 2},//	[CACHE_COUNT]	[BLOCK_SIZE]	[POLICY_NUM]	-Set Configurations
-			{"inc", 1},// [CACHE_NUMBER]									-Initialize Cache
+			{"inc", 1},// 	[CACHE_NUMBER]									-Initialize Cache
 			{"scd", 3},//	[CACHE_NUMBER]	[TOTAL_SIZE]	[SET_ASSOC]		-Set Cache Size and Set Assoc
 			{"scl", 2},//	[CACHE_NUMBER]	[LATENCY]						-Set Cache Latency
-			{"pch", 1},//	[CACHE_NUMBER]									-Print Cache Hit Rate
-			{"pcm", 1},//	[CACHE_NUMBER]									-Print Cache Miss Rate
-			{"ins", 3},//													-Initialize System
-			{"rat", 3},//  [ADDRESS]		[ARR_TIME]						-Read Address at Time
-			{"wat", 3},//  [ADDRESS]		[ARR_TIME]						-Write Address at Time
-			{"hap", 3},//													-Halt Process
-
+			{"rff", 1},//	[NUMBERS_LINES]									-Execute instructions from file
+			{"pcr", 1},//	[CACHE_NUMBER]									-Print Cache Hit/Miss Rate
+			{"pcc", 1},//	[CACHE_NUMBER]									-Print Cache Image
+			{"ins", 0},//													-Initialize System
+			{"rat", 2},//  	[ADDRESS]		[ARR_TIME]						-Read Address at Time
+			{"wat", 2},//  	[ADDRESS]		[ARR_TIME]						-Write Address at Time
+			{"hap", 0},//													-Halt Process
 	};
 	std::ofstream ofs;
 	std::ifstream ifs;
@@ -60,24 +60,7 @@ public:
 		std::string instruction;
 		std::pair<uint32_t, uint32_t> param;
 		for (ifs >> instruction; ifs.peek() != EOF; ifs >> instruction) {
-			if (instruction == "hal") {
-				break;
-			} else if (instruction == "blo") {
-				this->readParam(param, 1);
-				this->system.
-			} else if (instruction == "new") {
-				this->readParam(param, 2);
-			} else if (instruction == "lat") {
-				this->readParam(param, 2);
-			} else if (instruction == "con") {
-				this->readParam(param, 2);
-			} else if (instruction == "rea") {
-				this->readParam(param, 2);
-			} else if (instruction == "wri") {
-				this->readParam(param, 2);
-			} else {
-				throw std::runtime_error("ERR Unidentified Instruction");
-			}
+
 		}
 	}
 };
