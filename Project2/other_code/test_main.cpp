@@ -14,8 +14,8 @@ struct instr{
     int expectedOutTime;
 };
 //The actual process to access the cache, subject to change
-bool access(instr in){
-    return true;
+int access(instr in){
+    return DELAY;
 }
 //The run() function in class system:
 int main() {
@@ -47,18 +47,16 @@ int main() {
         instr currInstr = instrs.front();
         if (currInstr.expectedInTime <= time) {
             currInstr.actualInTime = time;
-            currInstr.expectedOutTime = currInstr.actualInTime + DELAY;
+            cout << "Start instruction " << currInstr.ID << " at clock cycle " << time << endl;
+            //Start process and get the total delay:
+            int expectedDelay = access(currInstr);
+            currInstr.expectedOutTime = currInstr.actualInTime + expectedDelay - 1;
             avaliable = false;
         }
         while(!avaliable) {
             cout << "Currect cycle is " << time << endl;
             if (currInstr.expectedOutTime == time) {
-                bool yeah = access(currInstr); //access the cache
-                if(yeah) {
-                    cout << "Finished instruction " << currInstr.ID << " at clock cycle " << time << endl;
-                }else{
-                    cout << "instruction " << currInstr.ID << "failed at clock cycle " << time << endl;
-                }
+                cout << "Finished instruction " << currInstr.ID << " at clock cycle " << time << endl;
                 avaliable = true;
                 instrs.pop();
             }else {
