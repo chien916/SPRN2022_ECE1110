@@ -9,7 +9,7 @@ private:
 	Cache *child_cache_ptr{nullptr};
 
 	//#1:Pointer of Cache one Unit closer to Memory, nullptr if is bottom cache
-	Cache *parent_cache_ptr{nullptr};
+	std::unique_ptr<Cache> parent_cache_ptr{nullptr};
 
 	/* #2 Information of the Partition of Address for this Specific Cache
 	 *
@@ -75,23 +75,13 @@ private:
 	}
 
 public:
-	/**
-	 * Set Parent Cache
-	 * Mark Parent Cache has been set in Ready
-	 * Warning: Receiving nullptr means Cache is Bottom Cache (NOT MEMORY)
-	 * @param _parent_ptr Pointer of Parent Cache
-	 */
-	void setParent(Cache *_parent_ptr) {
-		this->parent_cache_ptr = _parent_ptr;
-		this->ready.at(1) = true;
-	}
 
 	/**
 	 * Retrieve the Pointer of Parent Cache
 	 * @return Pointer of Parent Cache
 	 */
-	Cache *getParent() const {
-		return this->parent_cache_ptr;
+	[[nodiscard]] Cache *getParentPtr() const {
+		return this->parent_cache_ptr.get();
 	}
 
 	/**
@@ -106,10 +96,19 @@ public:
 	}
 
 	/**
+ * Create Parent Cache
+ * Mark Parent Cache has been set in Ready
+ */
+	void makeParent() {
+		this->parent_cache_ptr = std::make_unique<Cache>();
+		this->ready.at(0) = true;
+	}
+
+	/**
 	 * Retrieve the Pointer of Child Cache
 	 * @return Pointer of Child Cache
 	 */
-	Cache *getChild() const {
+	[[nodiscard]] Cache *getChildPtr() const {
 		return this->child_cache_ptr;
 	}
 
@@ -219,7 +218,7 @@ public:
 	 * @param _global_writer_ptr
 	 */
 	void printHitMissRate(std::ofstream *_global_writer_ptr) {
-		if(_global_writer_ptr == nullptr)
+		if (_global_writer_ptr == nullptr)
 			throw std::runtime_error("ERR File Manipulator is NULL");
 		if (!this->ready.at(7))
 			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
@@ -239,7 +238,7 @@ public:
 	 * @param _global_writer
 	 */
 	void printCacheImage(std::ofstream *_global_writer_ptr) {
-		if(_global_writer_ptr == nullptr)
+		if (_global_writer_ptr == nullptr)
 			throw std::runtime_error("ERR File Manipulator is NULL");
 		if (!this->ready.at(7))
 			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");

@@ -26,7 +26,7 @@ private:
 	uint32_t block_size{0};
 
 	//#3: Pointer of Top Cache (Second-top layer cache\memory has a copy of this)
-	Cache *top_cache_ptr;
+	std::unique_ptr<Cache> top_cache_ptr;
 
 	//#4: Total Clock Cycles Needed to Complete (Each cache has a copy of this)
 	uint64_t memory_latency{0};//#4
@@ -58,11 +58,11 @@ private:
 		size_t _cache_index = _cache_level - 1;
 		if (_cache_index > this->cache_count)
 			throw std::out_of_range("ERR Cache Level Out-of-range");
-		if (!top_cache_ptr)
+		if (top_cache_ptr == nullptr)
 			throw std::runtime_error("ERR Top Cache Ptr is Null");
-		Cache *this_cache_ptr = top_cache_ptr;
+		Cache *this_cache_ptr = top_cache_ptr.get();
 		for (size_t i = 0; i < _cache_index; i++) {
-			this_cache_ptr = this_cache_ptr->getChild();
+			this_cache_ptr = this_cache_ptr->getChildPtr();
 		}
 		return this_cache_ptr;
 	}
@@ -88,7 +88,7 @@ public:
 	}
 
 	/**
-	 * con	[CACHE_COUNT]	[BLOCK_SIZE]	[POLICY_NUM]	-
+	 * con	[cache_count]	[block_size]	[policy_num]	-
 	 * Set Configurations
 	 * Perform Format Check for Policy Number
 	 * Mark Cache Count, Block Size, Policy Number as Ready
@@ -99,7 +99,7 @@ public:
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
 	bool setConfig(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
-		if(_arguments== nullptr)
+		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_count = std::get<0>(*_arguments);
 		uint32_t _block_size = std::get<1>(*_arguments);
@@ -112,14 +112,24 @@ public:
 			this->read_write_policy = POLICY_WTNWA;
 		this->ready.at(0) = true;
 		this->cache_count = _cache_count;
+		if (_cache_count < 1)
+			throw std::runtime_error("ERR At Least 1 Cache is Needed");
 		this->ready.at(1) = true;
 		this->block_size = _block_size;
 		this->ready.at(2) = true;
+		this->top_cache_ptr = std::make_unique<Cache>();//create childest cache
+		Cache *this_cache_ptr = top_cache_ptr.get();//cache pointer iterator
+		this_cache_ptr->setId(1);
+		for (size_t i = 2; i <= _cache_count; i++) {
+			this_cache_ptr->makeParent();
+			this_cache_ptr = this_cache_ptr->getParentPtr();
+			this_cache_ptr->setId(i);
+		}
 		return true;
 	}
 
 	/**
-	 * scd	[CACHE_NUMBER]	[TOTAL_SIZE]	[SET_ASSOC]		-
+	 * scd	[cache_number]	[total_size]	[set_assoc]		-
 	 * Set Cache Size and Set Assoc
 	 * Perform Bound Checks for Cache Level
 	 * Warning: Function will Mark Ready in Cache, not System
@@ -129,7 +139,7 @@ public:
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
 	bool setCacheDimension(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
-		if(_arguments== nullptr)
+		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		uint32_t _total_size = std::get<1>(*_arguments);
@@ -142,7 +152,7 @@ public:
 
 
 	/**
-	 * scl	[CACHE_NUMBER]	[LATENCY]						-
+	 * scl	[cache_number]	[latency]						-
 	 * Set Cache Latency
 	 * Perform Bound Checks for Cache Level
 	 * Warning: Function will Mark Ready in Cache, not System
@@ -151,7 +161,7 @@ public:
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
 	bool setCacheLatency(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
-		if(_arguments== nullptr)
+		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		uint32_t _latency = std::get<1>(*_arguments);
@@ -161,7 +171,7 @@ public:
 	}
 
 	/**
-	 * sml	[LATENCY]										-
+	 * sml	[latency]										-
 	 * Set Memory Latency
 	 * Mark Memory Latency as Ready
 	 * Warning: This Function does NOT Set Memory Latency in Cache Array
@@ -169,7 +179,7 @@ public:
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
 	bool setMemoryLatency(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
-		if(_arguments== nullptr)
+		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _latency = std::get<0>(*_arguments);
 		this->memory_latency = _latency;
@@ -190,36 +200,31 @@ public:
 	}
 
 	/**
-	 * inc	[CACHE_NUMBER]									-
+	 * inc	[cache_number]									-
 	 * Initialize Cache
 	 * Perform Bound Checks for Cache Level
 	 * @param _cache_level The level(index) of cache with lowest being 1
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
 	bool initCache(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
-		if(_arguments== nullptr)
+		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
-		if (_cache_level < this->cache_count)
-			this_cache_ptr->setParent(this->getCacheAtPtr(_cache_level - 1));
-		else if (_cache_level > 1)
-			this_cache_ptr->setChild(this->getCacheAtPtr(_cache_level + 1));
 		this_cache_ptr->initCacheArray();
-		this_cache_ptr->setId(_cache_level);
 		return true;
 	}
 
 	/**
-	 * tre	[ADDRESS]		[ARR_TIME]						-
+	 * tre	[address]		[arr_time]						-
 	 * Task Read Address at Time
 	 * @param _address Raw 32-bit Address to be Read
 	 * @param _arrive_time	Clock Cycle at when This Specific Task is Scheduled
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
 	bool taskReadAddress(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
-		if(_arguments== nullptr)
+		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _address = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
@@ -228,7 +233,7 @@ public:
 	}
 
 	/**
-	 * twr	[ADDRESS]		[ARR_TIME]						-
+	 * twr	[address]		[arr_time]						-
 	 * Task Write Address at Time
 	 * @param _address Raw 32-bit Address to be Written
 	 * @param _arrive_time Clock Cycle at when This Specific Task is Scheduled
@@ -258,7 +263,7 @@ public:
 	}
 
 	/**
-	 * pcr [CACHE_NUMBER]									-
+	 * pcr [cache_number]									-
 	 * Print Cache Hit/Miss Rate
 	 * Perform Bound Checks for Cache Level
 	 * @param _cache_level The level(index) of cache with lowest being 1
@@ -269,12 +274,15 @@ public:
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
-		this->getCacheAtPtr(_cache_level)->printHitMissRate(global_writer_ptr);
+		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
+		if (!*this_cache_ptr)
+			throw std::runtime_error("ERR Cache is NOT Initialized");
+		this_cache_ptr->printHitMissRate(global_writer_ptr);
 		return true;
 	}
 
 	/**
-	 * pci	[CACHE_NUMBER]									-
+	 * pci	[cache_number]									-
 	 * Print Cache Image
 	 * Perform Bound Checks for Cache Level
 	 * @param _cache_level The level(index) of cache with lowest being 1
@@ -285,11 +293,15 @@ public:
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
-		this->getCacheAtPtr(_cache_level)->printCacheImage(global_writer_ptr);
+		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
+		if (!*this_cache_ptr)
+			throw std::runtime_error("ERR Cache is NOT Initialized");
+		this_cache_ptr->printCacheImage(global_writer_ptr);
 		return true;
 	}
 
 	/**
+	 * hat
 	 * Return False so that Core will Stop
 	 * @return ALWAYS FALSE
 	 */
