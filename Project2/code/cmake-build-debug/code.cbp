@@ -94,13 +94,10 @@
 		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/Include.h">
 			<Option target="code"/>
 		</Unit>
-		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/Process.cpp">
-			<Option target="code"/>
-		</Unit>
-		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/Process.h">
-			<Option target="code"/>
-		</Unit>
 		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/System.h">
+			<Option target="code"/>
+		</Unit>
+		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/Task.h">
 			<Option target="code"/>
 		</Unit>
 		<Unit filename="D:/Academics/SP2022/Yang_1110/projects/Project2/code/Tester.h">

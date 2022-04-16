@@ -4,6 +4,7 @@
 #include "Include.h"
 
 #include "Cache.h"
+#include "Task.h"
 
 class System {
 
@@ -16,7 +17,7 @@ private:
 	 *
 	 * true : Write-Thru + Non-Write-Allocate
 	 */
-	bool read_write_policy{false};
+	bool read_write_policy{POLICY_WBWA};
 
 	//#1: Number of Cache Layers in this System
 	size_t cache_count{0};
@@ -37,10 +38,18 @@ private:
 	 */
 	std::shared_ptr<std::ofstream> global_writer;
 
-	//Status of Initialization. All Members MUST be true before System Initialization
-	std::array<bool, 6> ready{false, false, false, false, false, false};
+	/* #6 Container holding tasks need to be done
+	 * Ready if Sorted.
+	 */
+	std::vector<Task> process_queue;
 
-	std::multiset<>
+	// Current task running in progress (No need to initialize)
+	std::vector<Task>::iterator current_process{process_queue.begin()};
+
+	// Status of Initialization. All Members MUST be true before System Initialization
+	std::array<bool, 7> ready{false, false, false, false, false, false, false};
+
+
 	/**
 	 * Retrieve the Pointer of Cache of Specific Level
 	 * @param _cache_level Cache Level of Cache Wanted (Top Cache being 1)
@@ -61,6 +70,15 @@ private:
 public:
 
 	/**
+	 * Check if ALL Data Members Are Initialized
+	 * @return True if All Initialized, false if At Least One Member if NOT Initialized
+	 */
+	explicit operator bool(){
+		bool if_no_false_found = std::find(this->ready.begin(), this->ready.end(), false) == this->ready.end();
+		return if_no_false_found;
+	}
+
+	/**
 	 * con	[CACHE_COUNT]	[BLOCK_SIZE]	[POLICY_NUM]	-Set Configurations
 	 * Perform Format Check for Policy Number
 	 * Mark Cache Count, Block Size, Policy Number as Ready
@@ -74,9 +92,9 @@ public:
 		if (_policy_num < 1 || _policy_num > 2)
 			throw std::runtime_error("ERR Policy Number Unrecognized");
 		else if (_policy_num == 1)
-			this->read_write_policy = false;
+			this->read_write_policy = POLICY_WBWA;
 		else if (_policy_num == 2)
-			this->read_write_policy = true;
+			this->read_write_policy = POLICY_WTNWA;
 		this->ready.at(0) = true;
 		this->cache_count = _cache_count;
 		this->ready.at(1) = true;

@@ -22,4 +22,11 @@
 #include <iomanip>
 #include <functional>
 
+#define TASKTYPE_READ false
+#define TASKTYPE_WRITE true
+
+#define POLICY_WBWA false
+#define POLICY_WTNWA true
+
+
 #endif //CODE_INCLUDE_H

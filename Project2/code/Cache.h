@@ -223,9 +223,9 @@ public:
 	 * Check if ALL Data Members Are Initialized, including Cache Array
 	 * @return True if All Initialized, false if At Least One Member if NOT Initialized
 	 */
-	bool getReady() {
-		bool if_found = std::find(this->ready.begin(), this->ready.end(), false) == this->ready.end();
-		return if_found;
+	explicit operator bool() const{
+		bool if_no_false_found = std::find(this->ready.begin(), this->ready.end(), false) == this->ready.end();
+		return if_no_false_found;
 	}
 
 	/**
