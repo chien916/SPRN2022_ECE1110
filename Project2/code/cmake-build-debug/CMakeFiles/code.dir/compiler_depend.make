@@ -7,6 +7,7 @@ CMakeFiles/code.dir/main.cpp.obj: ../main.cpp \
   C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/c++config.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/os_defines.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/cpu_defines.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/pstl_config.h \
   C:/Enviroments/Mingw64/lib/gcc/x86_64-w64-mingw32/11.2.0/include/stdint.h \
   C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/stdint.h \
   C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/crtdefs.h \
@@ -56,6 +57,20 @@ CMakeFiles/code.dir/main.cpp.obj: ../main.cpp \
   C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/malloc.h \
   C:/Enviroments/Mingw64/lib/gcc/x86_64-w64-mingw32/11.2.0/include/mm_malloc.h \
   C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/errno.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/bits/specfun.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/limits \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/gamma.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/special_function_util.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/bessel_function.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/beta_function.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/ell_integral.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/exp_integral.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/hypergeometric.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/legendre_function.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/modified_bessel_func.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/poly_hermite.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/poly_laguerre.tcc \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/riemann_zeta.tcc \
   C:/Enviroments/Mingw64/include/c++/11.2.0/exception \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/exception.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/exception_ptr.h \
@@ -66,7 +81,6 @@ CMakeFiles/code.dir/main.cpp.obj: ../main.cpp \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/nested_exception.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/chrono \
   C:/Enviroments/Mingw64/include/c++/11.2.0/ratio \
-  C:/Enviroments/Mingw64/include/c++/11.2.0/limits \
   C:/Enviroments/Mingw64/include/c++/11.2.0/ctime \
   C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/time.h \
   C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/_timeval.h \
@@ -119,12 +133,14 @@ CMakeFiles/code.dir/main.cpp.obj: ../main.cpp \
   C:/Enviroments/Mingw64/include/c++/11.2.0/ext/alloc_traits.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/alloc_traits.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_construct.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/string_view \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/bits/functional_hash.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/bits/string_view.tcc \
   C:/Enviroments/Mingw64/include/c++/11.2.0/ext/string_conversions.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/cstdlib \
   C:/Enviroments/Mingw64/include/c++/11.2.0/cstdio \
   C:/Enviroments/Mingw64/include/c++/11.2.0/cerrno \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/charconv.h \
-  C:/Enviroments/Mingw64/include/c++/11.2.0/bits/functional_hash.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/basic_string.tcc \
   C:/Enviroments/Mingw64/include/c++/11.2.0/vector \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_uninitialized.h \
@@ -174,14 +190,20 @@ CMakeFiles/code.dir/main.cpp.obj: ../main.cpp \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/atomic_base.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/atomic_lockfree_defines.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/backward/auto_ptr.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/glue_memory_defs.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/execution_defs.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/algorithm \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_algo.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/algorithmfwd.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_heap.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/uniform_int_dist.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/glue_algorithm_defs.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/functional \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/bits/std_function.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/unordered_map \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/hashtable.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/hashtable_policy.h \
+  C:/Enviroments/Mingw64/include/c++/11.2.0/bits/node_handle.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/unordered_map.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/erase_if.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/iostream \
@@ -199,9 +221,16 @@ CMakeFiles/code.dir/main.cpp.obj: ../main.cpp \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/quoted_string.h \
   C:/Enviroments/Mingw64/include/c++/11.2.0/sstream \
   C:/Enviroments/Mingw64/include/c++/11.2.0/bits/sstream.tcc \
-  C:/Enviroments/Mingw64/include/c++/11.2.0/functional \
-  C:/Enviroments/Mingw64/include/c++/11.2.0/bits/std_function.h
+  ../Core.h \
+  ../System.h \
+  ../Cache.h \
+  ../DataBlock.h \
+  ../Task.h
 
+
+C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/swprintf.inl:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/beta_function.tcc:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/unique_ptr.h:
 
@@ -217,17 +246,11 @@ C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/stddef.h:
 
 ../main.cpp:
 
-C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/stdint.h:
-
 C:/Enviroments/Mingw64/include/c++/11.2.0/cstdint:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/refwrap.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/cpu_defines.h:
-
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/locale_classes.h:
-
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/nested_exception.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/os_defines.h:
 
@@ -237,11 +260,17 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/tuple:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/move.h:
 
+C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/sys/types.h:
+
+C:/Enviroments/Mingw64/lib/gcc/x86_64-w64-mingw32/11.2.0/include-fixed/syslimits.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/pstl_config.h:
+
 C:/Enviroments/Mingw64/lib/gcc/x86_64-w64-mingw32/11.2.0/include/stdint.h:
 
-C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/crtdefs.h:
+C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/stdint.h:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/exception_ptr.h:
+C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/crtdefs.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_iterator_base_funcs.h:
 
@@ -273,6 +302,10 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/ctime:
 
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h:
 
+C:/Enviroments/Mingw64/include/c++/11.2.0/iosfwd:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/ell_integral.tcc:
+
 C:/Enviroments/Mingw64/include/c++/11.2.0/utility:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/type_traits:
@@ -285,13 +318,23 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/time_members.h
 
 C:/Enviroments/Mingw64/lib/gcc/x86_64-w64-mingw32/11.2.0/include/stddef.h:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_relops.h:
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/exp_integral.tcc:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_pair.h:
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_relops.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/exception:
 
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_pair.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/bessel_function.tcc:
+
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/ptr_traits.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/special_function_util.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/backward/binders.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/specfun.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/range_access.h:
 
@@ -329,19 +372,15 @@ C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/pthread.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_iterator_base_types.h:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/debug/assertions.h:
-
-C:/Enviroments/Mingw64/include/c++/11.2.0/chrono:
-
 C:/Enviroments/Mingw64/include/c++/11.2.0/ext/concurrence.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/debug/debug.h:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/new:
+C:/Enviroments/Mingw64/include/c++/11.2.0/chrono:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/debug/assertions.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/predefined_ops.h:
-
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/cxxabi_init_exception.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/uses_allocator.h:
 
@@ -353,10 +392,6 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/bits/invoke.h:
 
 C:/Enviroments/Mingw64/lib/gcc/x86_64-w64-mingw32/11.2.0/include-fixed/limits.h:
 
-C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/sys/types.h:
-
-C:/Enviroments/Mingw64/lib/gcc/x86_64-w64-mingw32/11.2.0/include-fixed/syslimits.h:
-
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/pthread_signal.h:
 
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/sec_api/stdlib_s.h:
@@ -365,7 +400,29 @@ C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/corecrt_startup.h:
 
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/malloc.h:
 
+C:/Enviroments/Mingw64/include/c++/11.2.0/limits:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/gamma.tcc:
+
+C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/wctype.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/hypergeometric.tcc:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/legendre_function.tcc:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/modified_bessel_func.tcc:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/poly_hermite.tcc:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/poly_laguerre.tcc:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/tr1/riemann_zeta.tcc:
+
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/exception.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/exception_ptr.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/cxxabi_init_exception.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/typeinfo:
 
@@ -373,9 +430,15 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/bits/basic_string.tcc:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/hash_bytes.h:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/ratio:
+../Core.h:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/limits:
+C:/Enviroments/Mingw64/include/c++/11.2.0/new:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/locale_classes.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/nested_exception.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/ratio:
 
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/_timeval.h:
 
@@ -409,8 +472,6 @@ C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/_mingw_off_t.h:
 
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/_mingw_stat64.h:
 
-C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/swprintf.inl:
-
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/sec_api/wchar_s.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/allocator.h:
@@ -439,15 +500,11 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/functional:
 
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/sec_api/stdio_s.h:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/iosfwd:
-
 C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/ctype.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/ostream_insert.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/cxxabi_forced.h:
-
-C:/Enviroments/Mingw64/include/c++/11.2.0/backward/binders.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/sstream:
 
@@ -475,6 +532,12 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/bits/alloc_traits.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_construct.h:
 
+C:/Enviroments/Mingw64/include/c++/11.2.0/string_view:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/functional_hash.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/string_view.tcc:
+
 C:/Enviroments/Mingw64/include/c++/11.2.0/ext/string_conversions.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/cstdlib:
@@ -484,8 +547,6 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/cstdio:
 C:/Enviroments/Mingw64/include/c++/11.2.0/cerrno:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/charconv.h:
-
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/functional_hash.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/vector:
 
@@ -516,8 +577,6 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/error_constant
 C:/Enviroments/Mingw64/include/c++/11.2.0/streambuf:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/locale_facets.h:
-
-C:/Enviroments/Mingw64/x86_64-w64-mingw32/include/wctype.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/x86_64-w64-mingw32/bits/ctype_base.h:
 
@@ -567,15 +626,25 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/bits/atomic_lockfree_defines.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/backward/auto_ptr.h:
 
+C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/glue_memory_defs.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/execution_defs.h:
+
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/stl_heap.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/uniform_int_dist.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/pstl/glue_algorithm_defs.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/std_function.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/unordered_map:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/hashtable.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/hashtable_policy.h:
+
+C:/Enviroments/Mingw64/include/c++/11.2.0/bits/node_handle.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/erase_if.h:
 
@@ -601,4 +670,10 @@ C:/Enviroments/Mingw64/include/c++/11.2.0/bits/quoted_string.h:
 
 C:/Enviroments/Mingw64/include/c++/11.2.0/bits/sstream.tcc:
 
-C:/Enviroments/Mingw64/include/c++/11.2.0/bits/std_function.h:
+../System.h:
+
+../Cache.h:
+
+../DataBlock.h:
+
+../Task.h:

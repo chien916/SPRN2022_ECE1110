@@ -9,32 +9,12 @@
 #include "System.h"
 
 class Core {
-	//[Argument Numbers][Binded Function]
 	using ArgumentTuple_t = std::tuple<uint32_t, uint32_t, uint32_t>;
 	using SystemFunction_t = std::pair<bool (System::*)(ArgumentTuple_t *), size_t>;
-/*	const std::unordered_map<std::string, size_t> instr_param_map{
-			{"con", 2},//	[CACHE_COUNT]	[BLOCK_SIZE]	[POLICY_NUM]	-Set Configurations ✓
-			{"inc", 1},// 	[CACHE_NUMBER]									-Initialize Cache ✓
-			{"scd", 3},//	[CACHE_NUMBER]	[TOTAL_SIZE]	[SET_ASSOC]		-Set Cache Size and Set Assoc ✓
-			{"scl", 2},//	[CACHE_NUMBER]	[LATENCY]						-Set Cache Latency ✓
-			{"sml", 2},//	[LATENCY]										-Set Memory Latency ✓
-			{"tre", 2},//  	[ADDRESS]		[ARR_TIME]						-Task Read Address at Time ✓
-			{"twr", 2},//  	[ADDRESS]		[ARR_TIME]						-Task Write Address at Time ✓
-			{"ins", 0},//													-Initialize System ✓
-			{"pcr", 1},//	[CACHE_NUMBER]									-Print Cache Hit/Miss Rate ✓
-			{"pci", 1},//	[CACHE_NUMBER]									-Print Cache Image ✓
-			{"hal", 0}
-	};*/
-
-
 	System system;
-
-
 	std::tuple<uint32_t, uint32_t, uint32_t> current_arguments;
 	std::pair<std::ifstream, std::ofstream> file_manipulator;
-
 	uint64_t clock{0};
-
 	std::unordered_map<std::string, SystemFunction_t> instruction_map;
 
 /**
@@ -58,17 +38,18 @@ class Core {
 	std::pair<std::string, ArgumentTuple_t> getNextInstruction() {
 		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Initialized.");
 		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Initialized.");
-		std::string this_read_buffer;
+		std::string this_instruction_string, this_argument_string;
 		std::pair<std::string, ArgumentTuple_t> to_return{"", {0, 0, 0}};
 		do {
-			file_manipulator.first >> this_read_buffer;
-		} while (instruction_map.find(this_read_buffer) == instruction_map.end());
-		to_return.first = this_read_buffer;
-		for (size_t i = 0; i < instruction_map.at(this_read_buffer).second; i++) {
-			file_manipulator.first >> this_read_buffer;
-			if (i == 0) std::get<0>(to_return.second) = argumentToInt(this_read_buffer);
-			else if (i == 1) std::get<1>(to_return.second) = argumentToInt(this_read_buffer);
-			else if (i == 2) std::get<2>(to_return.second) = argumentToInt(this_read_buffer);
+			file_manipulator.first >> this_instruction_string;
+		} while (instruction_map.find(this_instruction_string) == instruction_map.end() &&
+				 file_manipulator.first.good());
+		to_return.first = this_instruction_string;
+		for (size_t i = 0; i < instruction_map.at(this_instruction_string).second; i = i + 1) {
+			file_manipulator.first >> this_argument_string;
+			if (i == 0) std::get<0>(to_return.second) = argumentToInt(this_argument_string);
+			else if (i == 1) std::get<1>(to_return.second) = argumentToInt(this_argument_string);
+			else if (i == 2) std::get<2>(to_return.second) = argumentToInt(this_argument_string);
 		}
 		return to_return;
 	}
@@ -87,17 +68,17 @@ public:
 		file_manipulator.second.open(_filename.second);
 		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Found.");
 		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Found.");
-		instruction_map.at("con") = {&System::setConfig, 2};
-		instruction_map.at("inc") = {&System::initCache, 1};
-		instruction_map.at("scd") = {&System::setCacheDimension, 3};
-		instruction_map.at("scl") = {&System::setCacheLatency, 2};
-		instruction_map.at("sml") = {&System::setMemoryLatency, 2};
-		instruction_map.at("tre") = {&System::taskReadAddress, 2};
-		instruction_map.at("twr") = {&System::taskWriteAddress, 2};
-		instruction_map.at("ins") = {&System::initSystem, 0};
-		instruction_map.at("pcr") = {&System::printCacheRate, 1};
-		instruction_map.at("pci") = {&System::printCacheImage, 1};
-		instruction_map.at("hal") = {&System::haltProgram, 0};
+		instruction_map["con"] = {&System::setConfig, 3};
+		instruction_map["inc"] = {&System::initCache, 1};
+		instruction_map["scd"] = {&System::setCacheDimension, 3};
+		instruction_map["scl"] = {&System::setCacheLatency, 2};
+		instruction_map["sml"] = {&System::setMemoryLatency, 2};
+		instruction_map["tre"] = {&System::taskReadAddress, 2};
+		instruction_map["twr"] = {&System::taskWriteAddress, 2};
+		instruction_map["ins"] = {&System::initSystem, 0};
+		instruction_map["pcr"] = {&System::printCacheRate, 1};
+		instruction_map["pci"] = {&System::printCacheImage, 1};
+		instruction_map["hat"] = {&System::haltProgram, 0};
 	}
 
 	~Core() {
@@ -107,11 +88,16 @@ public:
 
 	void loadInstructions() {
 		while (file_manipulator.first.good()) {
-			std::pair<std::string, std::vector<uint32_t>> this_instruction = this->getNextInstruction();
-
+			std::pair<std::string, ArgumentTuple_t> this_instruction = this->getNextInstruction();
+			SystemFunction_t this_system_function = instruction_map.at(this_instruction.first);
+			std::invoke(this_system_function.first, system, &this_instruction.second);
 		}
-
 	};
 
+	void runInstructions() {
+
+	}
+
+};
 
 #endif //CODE_CORE_H

@@ -269,7 +269,7 @@ public:
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
-		this->getCacheAtPtr(_cache_level)->printHitMissRate();
+		this->getCacheAtPtr(_cache_level)->printHitMissRate(global_writer_ptr);
 		return true;
 	}
 
@@ -281,11 +281,11 @@ public:
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
 	bool printCacheImage(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
-		if (_argumens == nullptr)
+		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
-		this->getCacheAtPtr(_cache_level)->printCacheImage();
+		this->getCacheAtPtr(_cache_level)->printCacheImage(global_writer_ptr);
 		return true;
 	}
 
