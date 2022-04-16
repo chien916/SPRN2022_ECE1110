@@ -14,9 +14,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6fd31d6a-bd5e-48ca-8393-a803f6ecc3bd" name="Default Changelist" comment="printCacheImage() print instructions updated">
-      <change beforePath="$PROJECT_DIR$/Cache.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cache.h" afterDir="false" />
-    </list>
+    <list default="true" id="6fd31d6a-bd5e-48ca-8393-a803f6ecc3bd" name="Default Changelist" comment="Document Updated" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -68,9 +66,9 @@
         <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="code" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="$PROJECT_DIR$/INSTRUCTION.INS $PROJECT_DIR$/REPORT.LOG" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="code" TARGET_NAME="code" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="code" RUN_TARGET_NAME="code">
@@ -98,8 +96,7 @@
       <workItem from="1649536780952" duration="3490000" />
       <workItem from="1649727428814" duration="11421000" />
       <workItem from="1649894335609" duration="40608000" />
-      <workItem from="1650127928658" duration="6574000" />
-      <workItem from="1650146179937" duration="2730000" />
+      <workItem from="1650127928658" duration="6792000" />
     </task>
     <task id="LOCAL-00001" summary="Cache Javadocs finished">
       <created>1650056315287</created>
@@ -157,7 +154,14 @@
       <option name="project" value="LOCAL" />
       <updated>1650128359913</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Document Updated">
+      <created>1650136258595</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1650136258595</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -184,7 +188,8 @@
     <MESSAGE value="Functors Updated" />
     <MESSAGE value="Bug Fixes" />
     <MESSAGE value="bug fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fixes" />
+    <MESSAGE value="Document Updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="Document Updated" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -238,11 +243,6 @@
           <url>file://$PROJECT_DIR$/System.h</url>
           <line>101</line>
           <option name="timeStamp" value="27" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Cache.h</url>
-          <line>5</line>
-          <option name="timeStamp" value="28" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
