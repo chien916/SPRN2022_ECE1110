@@ -5,13 +5,12 @@
 #include "Include.h"
 
 class Task {
-public:
-	bool task_type{TASKTYPE_READ};
-	uint32_t address{0};
-	uint64_t arrive_time{0};
-	bool ready{false};
 private:
-	Task() = default;
+	bool task_type;
+	uint32_t address;
+	uint64_t arrive_time;
+	bool ready;
+public:
 
 	Task(const bool &_read, const uint32_t &_address, const uint64_t &_arrive_time) {
 		this->task_type = _read;
@@ -20,19 +19,22 @@ private:
 		this->ready = true;
 	}
 
+
 	bool operator<(const Task &_task) const {
+		if (!ready)
+			throw std::runtime_error("ERR Cannot Sort Task - Not Ready");
 		return this->arrive_time < _task.arrive_time;
 	}
 
-	bool getTaskType() const{
+	bool getTaskType() const {
 		return this->task_type;
 	}
 
-	uint32_t getAddress() const{
+	uint32_t getAddress() const {
 		return this->address;
 	}
 
-	uint64_t getArriveTime() const{
+	uint64_t getArriveTime() const {
 		return this->arrive_time;
 	}
 

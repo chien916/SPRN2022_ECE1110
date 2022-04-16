@@ -6,10 +6,10 @@
 class Cache {
 private:
 	//#0:Pointer of Cache one Unit closer to User, nullptr if is top cache
-	std::shared_ptr<Cache> child_cache_ptr{nullptr};
+	Cache *child_cache_ptr{nullptr};
 
 	//#1:Pointer of Cache one Unit closer to Memory, nullptr if is bottom cache
-	std::shared_ptr<Cache> parent_cache_ptr{nullptr};
+	Cache *parent_cache_ptr{nullptr};
 
 	/* #2 Information of the Partition of Address for this Specific Cache
 	 *
@@ -50,15 +50,10 @@ private:
 	//#7 Layer ID of this Specific Cache with the lowest being 1
 	size_t cache_id{0};//#7
 
-	/* #8 Pointer of File Writer
-	 *
-	 * use (*global_writer).operator<<() to write
-	 * e.g. (*global_writer)<<("THINGS TO WRITE")<<std::endl;
-	 */
-	std::shared_ptr<std::ofstream> global_writer;
+
 
 	//Status of Initialization. All Members MUST be true before Cache Initialization
-	std::array<bool, 9> ready{false, false, false, false, false, false, false, false, false};
+	std::array<bool, 8> ready{false, false, false, false, false, false, false, false};
 
 	/**
 	 * Decode a 32-bit Address to 3-fields Index-based Tuple indicating where the Data could be
@@ -86,7 +81,7 @@ public:
 	 * Warning: Receiving nullptr means Cache is Bottom Cache (NOT MEMORY)
 	 * @param _parent_ptr Pointer of Parent Cache
 	 */
-	void setParent(const std::shared_ptr<Cache> &_parent_ptr) {
+	void setParent(Cache *_parent_ptr) {
 		this->parent_cache_ptr = _parent_ptr;
 		this->ready.at(1) = true;
 	}
@@ -95,7 +90,7 @@ public:
 	 * Retrieve the Pointer of Parent Cache
 	 * @return Pointer of Parent Cache
 	 */
-	std::shared_ptr<Cache> getParent() const {
+	Cache *getParent() const {
 		return this->parent_cache_ptr;
 	}
 
@@ -105,7 +100,7 @@ public:
 	 * Warning: Receiving nullptr means Cache is Top Cache
 	 * @param _child_ptr Pointer of Child Cache
 	 */
-	void setChild(const std::shared_ptr<Cache> &_child_ptr) {
+	void setChild(Cache *_child_ptr) {
 		this->child_cache_ptr = _child_ptr;
 		this->ready.at(0) = true;
 	}
@@ -114,7 +109,7 @@ public:
 	 * Retrieve the Pointer of Child Cache
 	 * @return Pointer of Child Cache
 	 */
-	std::shared_ptr<Cache> getChild() const {
+	Cache *getChild() const {
 		return this->child_cache_ptr;
 	}
 
@@ -169,15 +164,6 @@ public:
 		this->ready.at(6) = true;
 	}
 
-	/**
-	 * Set the Pointer of File Writer (should be the same across all cache layers)
-	 * Mark Pointer of File Writer has been set in Ready
-	 * @param _global_writer Pointer of File Writer
-	 */
-	void setWriterPtr(const std::shared_ptr<std::ofstream> &_global_writer) {
-		this->global_writer = _global_writer;
-		this->ready.at(8) = true;
-	}
 
 	/**
 	 * Perform Ready Check to See if Requisites are Met for Cache Array Initialization
@@ -200,7 +186,7 @@ public:
 	 */
 	uint64_t read(const uint32_t &_address_val, const bool &_policy) {
 		//TODO - ALGORITHMS INCOMPLETE!!!
-		if (!this->getReady())
+		if (!this->operator bool())
 			throw std::runtime_error("ERR Cache Cannot Read - Cache Not Ready");
 		std::tuple<uint32_t, uint32_t, uint32_t> indices = this->addressDecode(_address_val);
 		for (const DataBlock &cb: cache_array.at(std::get<1>(indices))) {
@@ -223,21 +209,24 @@ public:
 	 * Check if ALL Data Members Are Initialized, including Cache Array
 	 * @return True if All Initialized, false if At Least One Member if NOT Initialized
 	 */
-	explicit operator bool() const{
+	explicit operator bool() const {
 		bool if_no_false_found = std::find(this->ready.begin(), this->ready.end(), false) == this->ready.end();
 		return if_no_false_found;
 	}
 
 	/**
 	 * Report Hit and Misses Count to File.
+	 * @param _global_writer_ptr
 	 */
-	void printHitMissRate() {
+	void printHitMissRate(std::ofstream *_global_writer_ptr) {
+		if(_global_writer_ptr == nullptr)
+			throw std::runtime_error("ERR File Manipulator is NULL");
 		if (!this->ready.at(7))
 			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
 		uint64_t sum = (this->hit_miss_count.first + this->hit_miss_count.second);
 		uint32_t hit_rate = 100 * (this->hit_miss_count.first / sum);
 		uint32_t miss_rate = 100 * (this->hit_miss_count.second / sum);
-		(*global_writer)
+		(*_global_writer_ptr)
 				<< "##HITS MISSES FOR CACHE L" << this->cache_id << std::endl
 				<< "    HITS:      " << std::setw(10) << this->hit_miss_count.first << std::endl
 				<< "    MISSES:    " << std::setw(10) << this->hit_miss_count.second << std::endl
@@ -247,8 +236,11 @@ public:
 
 	/**
 	 * Report Contents of This Specific Cache to File
+	 * @param _global_writer
 	 */
-	void printCacheImage() {
+	void printCacheImage(std::ofstream *_global_writer_ptr) {
+		if(_global_writer_ptr == nullptr)
+			throw std::runtime_error("ERR File Manipulator is NULL");
 		if (!this->ready.at(7))
 			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
 		//TODO - Print Contents
