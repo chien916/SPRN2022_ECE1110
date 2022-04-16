@@ -6,13 +6,26 @@
 #define CODE_INCLUDE_H
 
 #include <cstdint>
-#include <iostream>
 #include <tuple>
 #include <array>
 #include <cmath>
 #include <exception>
 #include <chrono>
 #include <bitset>
-#include <cassert>
+#include <vector>
+#include <fstream>
+#include <memory>
+#include <algorithm>
+#include <unordered_map>
+#include <iostream>
+#include <set>
+#include <iomanip>
+#include <functional>
+#define TASKTYPE_READ false
+#define TASKTYPE_WRITE true
+
+#define POLICY_WBWA false
+#define POLICY_WTNWA true
+
 
 #endif //CODE_INCLUDE_H

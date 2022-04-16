@@ -1,49 +1,93 @@
-//
-// Created by Yinhao on 4/9/2022.
-//
-
 #ifndef CODE_DATABLOCK_H
 #define CODE_DATABLOCK_H
 
 #include "Include.h"
 
-template<size_t SZ_TAG_BITS, size_t SZ_BLOCK_SIZE>
-class _DATA_BLOCK {
+class DataBlock {
 private:
-    bool valid;
-    uint32_t tag;
-    std::array<uint8_t, SZ_BLOCK_SIZE> data;
-    std::chrono::time_point<std::chrono::steady_clock> last_use;
+	bool valid{false};
+	bool dirty{false};
+	uint32_t tag{0};
+	uint32_t block_size{0};
+	std::chrono::time_point<std::chrono::steady_clock> last_use{std::chrono::steady_clock::now()};
 public:
-    explicit _DATA_BLOCK(bool valid = false, uint32_t tag = 0, uint32_t data = 0) {
-        if (uint32_t(round(log2(tag))) > SZ_TAG_BITS) throw std::overflow_error("SZ_TAG_BITS could not fit TAG");
-        if (uint32_t(round(log2(data))) > SZ_BLOCK_SIZE) throw std::overflow_error("SZ_DATA_BITS could not fit DATA");
-        this->last_use = std::chrono::steady_clock::now();
-        this->valid = valid;
-        this->tag = tag;
-        this->data = data;
-    }
 
-    inline bool ifValid() {
-        return this->valid;
-    }
+	/**
+	 * Explicit constructor that receives desired Block Size.
+	 * @param block_size System-wide how many bytes should a DataBlock hold
+	 */
+	explicit DataBlock(const uint32_t &block_size = 0) {
+		this->block_size = block_size;
+	}
 
-    uint32_t getTag() {
-        return this->tag;
-    }
+	/**
+	 * Copy valid,tag,and block_size from received Datablock, and record current time
+	 * @param _data_block Received DataBlock to copy from
+	 * @return
+	 */
+	DataBlock &operator=(const DataBlock &_data_block) {
+		this->valid = _data_block.valid;
+		this->tag = _data_block.tag;
+		this->block_size = _data_block.block_size;
+		this->last_use = std::chrono::steady_clock::now();
+		return *this;
+	}
 
-    uint32_t getData(uint32_t offset) {
-        this->last_use = std::chrono::steady_clock::now();
-        return this->data.at(offset);
-    }
+	/**
+	 * Update this DataBlock with new tag value, make it valid, and record current time
+	 * @param _tag New tag value to be assigned to this DataBlock
+	 */
+	void update(const uint32_t &_tag) {
+		this->valid = true;
+		this->tag = _tag;
+		this->last_use = std::chrono::steady_clock::now();
+	}
 
-    void setTagAndData(uint32_t tag, const std::array<uint8_t, SZ_BLOCK_SIZE> &data) {
-        if (uint32_t(round(log2(tag))) > SZ_TAG_BITS) throw std::overflow_error("SZ_TAG_BITS could not fit TAG");
-        this->last_use = std::chrono::steady_clock::now();
-        this->tag = tag;
-        std::copy(data.begin(), data.end(), this->data.begin());
-    }
+	/**
+	 * Compare if this DataBlock's tag matches a given
+	 * @param _tag Tag value to be compared to
+	 * @return True if tag matches; False otherwise
+	 */
+	bool compareTag(const uint32_t &_tag) const {
+		return (this->tag == _tag && this->valid);
+	}
 
+	/**
+	 * Mark this DataBlock Dirty
+	 * Meaning this DataBlock needs to sync with parents
+	 */
+	void markDirty() {
+		this->last_use = std::chrono::steady_clock::now();
+		this->dirty = true;
+	}
+
+	/**
+	 * Test if this Datablock needs to sync with parents
+	 * @return True if dirty, false otherwise
+	 */
+	bool getDirty() const {
+		if (!valid)
+			throw std::runtime_error("ERR Dirty Bit Cannot be Retrieved - Datablock NOT Valid");
+		return this->dirty;
+	}
+
+	/**
+	 * Test if this Datablock has been used at least once
+	 * @return True if valid, false otherwise
+	 */
+	bool getValid() const {
+		return this->valid;
+	}
+
+	/**
+	 * Retrieve the tag of this DataBlock
+	 * @return Tag retrieved
+	 */
+	uint32_t getTag() const {
+		if (!valid)
+			throw std::runtime_error("ERR Tag Cannot be Retrieved - Datablock NOT Valid");
+		return this->tag;
+	}
 
 };
 
