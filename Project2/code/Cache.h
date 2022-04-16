@@ -283,6 +283,7 @@ public:
             outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << std::endl;
         }
         std::cout << "Finished Printing Image for Cache" << cache_id << std::endl;
+        outfile.close();
 	}
 
 
