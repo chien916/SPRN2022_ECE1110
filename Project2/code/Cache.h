@@ -234,15 +234,55 @@ public:
 	}
 
 	/**
-	 * Report Contents of This Specific Cache to File
-	 * @param _global_writer
+	 * Report Contents of This Specific Cache to a New File
+	 * Open and Write to "image_L(Cache Level).txt"
 	 */
-	void printCacheImage(std::ofstream *_global_writer_ptr) {
-		if (_global_writer_ptr == nullptr)
-			throw std::runtime_error("ERR File Manipulator is NULL");
+	void printCacheImage() {
+
 		if (!this->ready.at(7))
 			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
-		//TODO - Print Contents
+
+        std::ofstream outfile;
+        std::string filename = "image_L" + std::to_string(cache_id) + ".txt";
+        outfile.open(filename);
+        if(!outfile.is_open()){
+            throw std::runtime_error("Couldn't open image file");
+        }
+
+        //Get the number of rows and columns
+        uint32_t colNum = std::get<1>(this->dimensions);
+        uint32_t rowNum = std::get<2>(this->dimensions);
+
+        std::cout << "Printing Image for Cache" << cache_id << "with" << rowNum << "rows and " << colNum << "cols" << std::endl;
+
+        //Printing the first line:
+        outfile << "Set Index || ";
+        for(uint32_t i = 0; i < colNum-1; i++){
+            outfile << "Block Index | Valid | Dirty | Tag || ";
+        }
+        outfile << "Block Index | Valid | Dirty | Tag" << std::endl;
+
+        //Printing the content:
+        uint32_t setIndex, blockIndex,tag;
+        bool valid, dirty;
+        for(uint32_t i = 0; i < rowNum; i++){
+            setIndex = i;
+            outfile << setIndex << " || ";
+            for(uint32_t j = 0; j < colNum - 1; j++){
+                blockIndex = setIndex + j;
+                valid = cache_array.at(i).at(j).getValid();
+                dirty = cache_array.at(i).at(j).getDirty();
+                tag = cache_array.at(i).at(j).getTag();
+                outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << " || ";
+            }
+            // Last block in the row:
+            blockIndex = setIndex + colNum-1;
+            valid = cache_array.at(i).at(colNum-1).getValid();
+            dirty = cache_array.at(i).at(colNum-1).getDirty();
+            tag = cache_array.at(i).at(colNum-1).getTag();
+            outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << std::endl;
+        }
+        std::cout << "Finished Printing Image for Cache" << cache_id << std::endl;
 	}
 
 

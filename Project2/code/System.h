@@ -319,7 +319,7 @@ public:
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
 		if (!*this_cache_ptr)
 			throw std::runtime_error("ERR Cache is NOT Initialized");
-		this_cache_ptr->printCacheImage(global_writer_ptr);
+		this_cache_ptr->printCacheImage();
 		return true;
 	}
 
