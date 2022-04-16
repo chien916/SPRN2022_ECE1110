@@ -170,7 +170,7 @@ public:
 	 */
 	void initCacheArray() {
 		if (!this->ready.at(3))
-			throw std::runtime_error("ERR Cannot Initialize Cache Array - Dimensions Not Ready");
+			throw std::invalid_argument("ERR inc called before scd");
 		DataBlock empty_data_block{std::get<0>(this->dimensions)};
 		std::vector<DataBlock> empty_cache_block{std::get<1>(this->dimensions), empty_data_block};
 		this->cache_array.resize(std::get<2>(this->dimensions), empty_cache_block);

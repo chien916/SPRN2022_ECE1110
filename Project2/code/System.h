@@ -104,6 +104,8 @@ public:
 		uint32_t _cache_count = std::get<0>(*_arguments);
 		uint32_t _block_size = std::get<1>(*_arguments);
 		uint32_t _policy_num = std::get<2>(*_arguments);
+		if (ready.at(0) || ready.at(1) || ready.at(2) || ready.at(3))
+			throw std::invalid_argument("ERR con called twice");
 		if (_policy_num < 1 || _policy_num > 2)
 			throw std::runtime_error("ERR Policy Number Unrecognized");
 		else if (_policy_num == 1)
@@ -119,12 +121,15 @@ public:
 		this->ready.at(2) = true;
 		this->top_cache_ptr = std::make_unique<Cache>();//create childest cache
 		Cache *this_cache_ptr = top_cache_ptr.get();//cache pointer iterator
+		if (this_cache_ptr->operator bool())
+			throw std::invalid_argument("ERR con Called after inc");
 		this_cache_ptr->setId(1);
 		for (size_t i = 2; i <= _cache_count; i++) {
 			this_cache_ptr->makeParent();
 			this_cache_ptr = this_cache_ptr->getParentPtr();
 			this_cache_ptr->setId(i);
 		}
+		this->ready.at(3) = true;
 		return true;
 	}
 
@@ -141,12 +146,17 @@ public:
 	bool setCacheDimension(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		if (!this->ready.at(3))
+			throw std::invalid_argument("ERR scd Called Before con");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		uint32_t _total_size = std::get<1>(*_arguments);
 		uint32_t _set_assoc = std::get<2>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		if (block_size == 0) return false;
-		getCacheAtPtr(_cache_level)->setParam(block_size, _total_size, _set_assoc);
+		Cache *this_cache_ptr = getCacheAtPtr(_cache_level);
+		if (this_cache_ptr->operator bool())
+			throw std::invalid_argument("ERR scd called after inc");
+		this_cache_ptr->setParam(block_size, _total_size, _set_assoc);
 		return true;
 	}
 
@@ -166,7 +176,10 @@ public:
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		uint32_t _latency = std::get<1>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
-		this->getCacheAtPtr(_cache_level)->setLatency(_latency);
+		Cache *this_cache = this->getCacheAtPtr(_cache_level);
+		if (this_cache->operator bool())
+			throw std::invalid_argument("ERR scl called after inc");
+		this_cache->setLatency(_latency);
 		return true;
 	}
 
@@ -181,6 +194,8 @@ public:
 	bool setMemoryLatency(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		if (!this->ready.at(3))
+			throw std::invalid_argument("ERR sml called after inc");
 		uint32_t _latency = std::get<0>(*_arguments);
 		this->memory_latency = _latency;
 		this->ready.at(4) = true;
@@ -209,9 +224,12 @@ public:
 	bool initCache(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		if (!this->ready.at(4))
+			throw std::invalid_argument("ERR inc called before sml");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
+		this_cache_ptr->setMemoryLatency(this->memory_latency);
 		this_cache_ptr->initCacheArray();
 		return true;
 	}
@@ -226,6 +244,8 @@ public:
 	bool taskReadAddress(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		if (this->operator bool())
+			throw std::invalid_argument("ERR Cannot Task Once System is Initialized");
 		uint32_t _address = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
 		this->task_queue.emplace_back(TASKTYPE_READ, _address, _arrive_time);
@@ -242,6 +262,8 @@ public:
 	bool taskWriteAddress(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		if (this->operator bool())
+			throw std::invalid_argument("ERR Cannot Task Once System is Initialized");
 		uint32_t _address = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
 		this->task_queue.emplace_back(TASKTYPE_WRITE, _address, _arrive_time);
@@ -257,6 +279,7 @@ public:
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		sortProcessQueue();
+		this->ready.at(6) = true;
 		if (!this->operator bool())
 			throw std::runtime_error("ERR System Cannot Initialize - System Not Ready");
 		return true;
@@ -308,6 +331,7 @@ public:
 	bool haltProgram(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+
 		return false;
 	}
 

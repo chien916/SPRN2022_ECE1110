@@ -21,7 +21,6 @@
 #include <set>
 #include <iomanip>
 #include <functional>
-
 #define TASKTYPE_READ false
 #define TASKTYPE_WRITE true
 

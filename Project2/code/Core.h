@@ -54,6 +54,10 @@ class Core {
 		return to_return;
 	}
 
+	void report(const auto &_formatter_string) {
+		std::cout << "$CORE " << _formatter_string << std::endl;
+	}
+
 
 public:
 
@@ -68,11 +72,12 @@ public:
 		file_manipulator.second.open(_filename.second);
 		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Found.");
 		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Found.");
+		system.setWriterPtr(&this->file_manipulator.second);
 		instruction_map["con"] = {&System::setConfig, 3};
-		instruction_map["inc"] = {&System::initCache, 1};
 		instruction_map["scd"] = {&System::setCacheDimension, 3};
 		instruction_map["scl"] = {&System::setCacheLatency, 2};
-		instruction_map["sml"] = {&System::setMemoryLatency, 2};
+		instruction_map["sml"] = {&System::setMemoryLatency, 1};
+		instruction_map["inc"] = {&System::initCache, 1};
 		instruction_map["tre"] = {&System::taskReadAddress, 2};
 		instruction_map["twr"] = {&System::taskWriteAddress, 2};
 		instruction_map["ins"] = {&System::initSystem, 0};
