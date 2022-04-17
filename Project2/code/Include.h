@@ -21,9 +21,10 @@
 #include <iomanip>
 #include <functional>
 #include <string>
+#include <forward_list>
 
 enum class task_t {
-	task_readAddress, task_writeAddress, task_reportHitMiss, task_reportImage
+	task_readAddress, task_writeAddress, task_reportHitMiss, task_reportImage, task_halt
 };
 
 

@@ -1,3 +1,0 @@
-/Users/peishaoyu/Desktop/SPRN2022_ECE1110/Project2/code/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/peishaoyu/Desktop/SPRN2022_ECE1110/Project2/code/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/peishaoyu/Desktop/SPRN2022_ECE1110/Project2/code/cmake-build-debug/CMakeFiles/code.dir

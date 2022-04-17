@@ -10,7 +10,7 @@ class System {
 
 private:
 	//Number of Clock Cycles the System has Passed (No need to initialize)
-	uint64_t time_count{0};
+	uint64_t clock_count{0};
 
 	/* #0: Policy Number this System should Implement
 	 * false : Write-Back + Write-Allocate
@@ -51,7 +51,7 @@ private:
 	 * @param _cache_level Cache Level of Cache Wanted (Top Cache being 1)
 	 * @return The Retrieved Pointer of Cache
 	 */
-	Cache *getCacheAtPtr(const uint32_t &_cache_level) {
+	[[nodiscard]] Cache *getCacheAtPtr(const uint32_t &_cache_level) {
 		size_t _cache_index = _cache_level - 1;
 		if (_cache_index > this->cache_count)
 			throw std::out_of_range("ERR Cache Level Out-of-range");
@@ -74,12 +74,25 @@ private:
 	}
 
 
-	uint64_t requestReadAddress(const uint32_t &_address) {
-
+	uint64_t requestReadAddress(const uint32_t &_address, const uint64_t &_arrive_time) {
+		uint64_t clock_span = top_cache_ptr->read(_address, this->read_write_policy);
+		return clock_span;
 	}
 
-	uint64_t requestWriteAddress(const uint32_t &_address) {
+	//TO-DO Algorithms incomplete
+	uint64_t requestWriteAddress(const uint32_t &_address, const uint64_t &_arrive_time) {
+		uint64_t clock_span = 0;
+		return clock_span;
+	}
 
+	uint64_t requestReportHissMiss(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
+		this->getCacheAtPtr(_cache_level)->printHitMissRate(_arrive_time);
+		return 0;
+	}
+
+	uint64_t requestReportImage(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
+		this->getCacheAtPtr(_cache_level)->printCacheImage(_arrive_time);
+		return 0;
 	}
 
 
@@ -291,6 +304,7 @@ public:
 		this->ready.at(6) = true;
 		if (!this->operator bool())
 			throw std::runtime_error("ERR System Cannot Initialize - System Not Ready");
+		runTaskQueue();
 		return true;
 	}
 
@@ -301,7 +315,7 @@ public:
 	 * @param _cache_level The level(index) of cache with lowest being 1
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
-	bool printCacheRate(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
+	bool taskPrintCacheRate(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		if (this->operator bool())
@@ -309,9 +323,6 @@ public:
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
-		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
-		if (!*this_cache_ptr)
-			throw std::runtime_error("ERR Cache is NOT Initialized");
 		this->task_queue.emplace_back(task_t::task_reportHitMiss, _cache_level, _arrive_time);
 		return true;
 	}
@@ -323,14 +334,15 @@ public:
 	 * @param _cache_level The level(index) of cache with lowest being 1
 	 * @return True if Instruction Ran without Errors, false otherwise
 	 */
-	bool printCacheImage(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
+	bool taskPrintCacheImage(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		if (this->operator bool())
 			throw std::invalid_argument("ERR Cannot Report Once System is Initialized");
 		uint32_t _cache_level = std::get<0>(*_arguments);
+		uint32_t _arrive_time = std::get<1>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
-		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
+		this->task_queue.emplace_back(task_t::task_reportImage, _cache_level, _arrive_time);
 		return true;
 	}
 
@@ -342,11 +354,27 @@ public:
 	bool haltProgram(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		uint32_t _arrive_time = std::get<0>(*_arguments);
+		task_queue.emplace_back(task_t::task_halt, 0, _arrive_time);
 		return false;
 	}
 
 	void runTaskQueue() {
-
+		auto current_task_ptr = this->task_queue.begin();
+		while (current_task_ptr != this->task_queue.end() && current_task_ptr->getTaskType() != task_t::task_halt) {
+			while (current_task_ptr->getArriveTime() == clock_count) {
+				if (current_task_ptr->getTaskType() == task_t::task_readAddress)
+					this->requestReadAddress(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
+				else if (current_task_ptr->getTaskType() == task_t::task_writeAddress)
+					this->requestWriteAddress(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
+				else if (current_task_ptr->getTaskType() == task_t::task_reportHitMiss)
+					this->requestReportHissMiss(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
+				else if (current_task_ptr->getTaskType() == task_t::task_reportImage)
+					this->requestReportImage(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
+				current_task_ptr++;
+			}
+			clock_count += 1;
+		}
 	}
 
 };

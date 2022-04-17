@@ -76,8 +76,8 @@ public:
 		instruction_map["tre"] = {&System::taskReadAddress, 2};
 		instruction_map["twr"] = {&System::taskWriteAddress, 2};
 		instruction_map["ins"] = {&System::initSystem, 0};
-		instruction_map["pcr"] = {&System::printCacheRate, 2};
-		instruction_map["pci"] = {&System::printCacheImage, 2};
+		instruction_map["pcr"] = {&System::taskPrintCacheRate, 2};
+		instruction_map["pci"] = {&System::taskPrintCacheImage, 2};
 		instruction_map["hat"] = {&System::haltProgram, 0};
 	}
 

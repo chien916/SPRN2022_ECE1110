@@ -223,8 +223,8 @@ public:
 	 * Report Hit and Misses Count to File.
 	 * @param _global_writer_ptr
 	 */
-	void printHitMissRate(std::ofstream *_global_writer_ptr) {
-		if (_global_writer_ptr == nullptr)
+	void printHitMissRate(const uint64_t &_arrive_time) {
+/*		if (_global_writer_ptr == nullptr)
 			throw std::runtime_error("ERR File Manipulator is NULL");
 		if (!this->ready.at(7))
 			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
@@ -236,17 +236,37 @@ public:
 				<< "    HITS:      " << std::setw(10) << this->hit_miss_count.first << std::endl
 				<< "    MISSES:    " << std::setw(10) << this->hit_miss_count.second << std::endl
 				<< "    HIT  RATE: " << std::setw(10) << hit_rate << std::endl
-				<< "    MISS RATE: " << std::setw(10) << miss_rate << std::endl;
+				<< "    MISS RATE: " << std::setw(10) << miss_rate << std::endl;*/
 	}
 
-	/**
+	void printCacheImage(const uint64_t &_arrive_time) {
+		std::string image_name = "img_" + std::to_string(this->cache_id) + "_" + std::to_string(_arrive_time) + ".csv";
+		std::ofstream image_writer{image_name};
+		//Print Titles
+		image_writer << "BLOCK_INDEX,VALID,DIRTY";
+		for (size_t db = 0; db < std::get<0>(this->dimensions); db++)
+			image_writer << ",TAG[" + std::to_string(db) + "]";
+		image_writer << std::endl;
+		//Print Contents
+		for (size_t row = 0; row < std::get<2>(this->dimensions); row++) {
+			for (size_t col = 0; col < std::get<1>(this->dimensions); col++) {
+				image_writer << "CACHE[" + std::to_string(row) + "][" + std::to_string(col) + "]";
+				const DataBlock &this_db = this->cache_array.at(row).at(col);
+				image_writer << "," + std::to_string(this_db.getValid()) + "," + std::to_string(this_db.getDirty());
+				for (size_t db = 0; db < std::get<0>(this->dimensions); db++)
+					image_writer << "," + std::to_string(this_db.getTag());
+				image_writer << std::endl;
+			}
+		}
+		image_writer.close();
+	}
+
+/*	*//**
 	 * Report Contents of This Specific Cache to a New File
 	 * Open and Write to "image_L(Cache Level).txt"
-	 */
-	void printCacheImage() {
+	 *//*
+	void printCacheImage2() {
 
-		if (!this->ready.at(7))
-			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
 
 		std::ofstream outfile;
 		std::string filename = "image_L" + std::to_string(cache_id) + ".txt";
@@ -291,7 +311,7 @@ public:
 		}
 		std::cout << "Finished Printing Image for Cache" << cache_id << std::endl;
 		outfile.close();
-	}
+	}*/
 
 
 };
