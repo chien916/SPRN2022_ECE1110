@@ -59,7 +59,7 @@ private:
 			throw std::runtime_error("ERR Top Cache Ptr is Null");
 		Cache *this_cache_ptr = top_cache_ptr.get();
 		for (size_t i = 0; i < _cache_index; i++) {
-			this_cache_ptr = this_cache_ptr->getChildPtr();
+			this_cache_ptr = this_cache_ptr->getParentPtr();
 		}
 		return this_cache_ptr;
 	}
@@ -74,23 +74,23 @@ private:
 	}
 
 
-	uint64_t requestReadAddress(const uint32_t &_address, const uint64_t &_arrive_time) {
+	uint64_t reqReadAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
 		uint64_t clock_span = top_cache_ptr->read(_address, this->read_write_policy);
 		return clock_span;
 	}
 
 	//TO-DO Algorithms incomplete
-	uint64_t requestWriteAddress(const uint32_t &_address, const uint64_t &_arrive_time) {
+	uint64_t reqWrtAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
 		uint64_t clock_span = 0;
 		return clock_span;
 	}
 
-	uint64_t requestReportHissMiss(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
+	uint64_t reqRptHmr(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
 		this->getCacheAtPtr(_cache_level)->printHitMissRate(_arrive_time);
 		return 0;
 	}
 
-	uint64_t requestReportImage(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
+	uint64_t reqRepImg(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
 		this->getCacheAtPtr(_cache_level)->printCacheImage(_arrive_time);
 		return 0;
 	}
@@ -362,16 +362,21 @@ public:
 	void runTaskQueue() {
 		auto current_task_ptr = this->task_queue.begin();
 		while (current_task_ptr != this->task_queue.end() && current_task_ptr->getTaskType() != task_t::task_halt) {
-			while (current_task_ptr->getArriveTime() == clock_count) {
-				if (current_task_ptr->getTaskType() == task_t::task_readAddress)
-					this->requestReadAddress(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
-				else if (current_task_ptr->getTaskType() == task_t::task_writeAddress)
-					this->requestWriteAddress(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
-				else if (current_task_ptr->getTaskType() == task_t::task_reportHitMiss)
-					this->requestReportHissMiss(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
-				else if (current_task_ptr->getTaskType() == task_t::task_reportImage)
-					this->requestReportImage(current_task_ptr->getTaskValue(), current_task_ptr->getArriveTime());
+			while (current_task_ptr->getArriveTime() <= clock_count) {
+				task_t this_task = current_task_ptr->getTaskType();
+				uint32_t this_value = current_task_ptr->getTaskValue();
+				uint32_t this_arrive_time = current_task_ptr->getArriveTime();
+				uint64_t add_clk{0};
+				if (this_task == task_t::task_readAddress)
+					add_clk = this->reqReadAdr(this_value, this_arrive_time);
+				else if (this_task == task_t::task_writeAddress)
+					add_clk = this->reqWrtAdr(this_value, this_arrive_time);
+				else if (this_task == task_t::task_reportHitMiss)
+					add_clk = this->reqRptHmr(this_value, this_arrive_time);
+				else if (this_task == task_t::task_reportImage)
+					add_clk = this->reqRepImg(this_value, this_arrive_time);
 				current_task_ptr++;
+				clock_count += add_clk;
 			}
 			clock_count += 1;
 		}

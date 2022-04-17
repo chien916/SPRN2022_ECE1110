@@ -50,8 +50,6 @@ private:
 	//#7 Layer ID of this Specific Cache with the lowest being 1
 	size_t cache_id{0};//#7
 
-
-
 	//Status of Initialization. All Members MUST be true before Cache Initialization
 	std::array<bool, 8> ready{false, false, false, false, false, false, false, false};
 
@@ -61,7 +59,7 @@ private:
 	 * @param address_val Raw 32-bit address
 	 * @return [Index of Tag][Index of Index][Index of Offset]
 	 */
-	std::tuple<uint32_t, uint32_t, uint32_t> addressDecode(const uint32_t &address_val) const {
+	[[nodiscard]] std::tuple<uint32_t, uint32_t, uint32_t> addressDecode(const uint32_t &address_val) const {
 		std::tuple<uint32_t, uint32_t, uint32_t> indices;
 		std::get<0>(indices) =
 				address_val >> (std::get<2>(this->address_partition) + std::get<1>(this->address_partition));
@@ -224,94 +222,43 @@ public:
 	 * @param _global_writer_ptr
 	 */
 	void printHitMissRate(const uint64_t &_arrive_time) {
-/*		if (_global_writer_ptr == nullptr)
-			throw std::runtime_error("ERR File Manipulator is NULL");
-		if (!this->ready.at(7))
-			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
-		uint64_t sum = (this->hit_miss_count.first + this->hit_miss_count.second);
-		uint32_t hit_rate = 100 * (this->hit_miss_count.first / sum);
-		uint32_t miss_rate = 100 * (this->hit_miss_count.second / sum);
-		(*_global_writer_ptr)
-				<< "##HITS MISSES FOR CACHE L" << this->cache_id << std::endl
-				<< "    HITS:      " << std::setw(10) << this->hit_miss_count.first << std::endl
-				<< "    MISSES:    " << std::setw(10) << this->hit_miss_count.second << std::endl
-				<< "    HIT  RATE: " << std::setw(10) << hit_rate << std::endl
-				<< "    MISS RATE: " << std::setw(10) << miss_rate << std::endl;*/
+		std::string hitmiss_name =
+				"hmr_l" + std::to_string(this->cache_id) + "_" + std::to_string(_arrive_time) + ".csv";
+		std::ofstream hitmiss_writer{hitmiss_name};
+		hitmiss_writer << "HITS,MISSES,HIT_R,MISS_R" << std::endl;
+		hitmiss_writer << this->hit_miss_count.first << "," << this->hit_miss_count.second << ","
+					   << std::to_string(
+							   float(hit_miss_count.first) / float(hit_miss_count.second + hit_miss_count.first)) << ","
+					   << std::to_string(
+							   float(hit_miss_count.second) / float(hit_miss_count.second + hit_miss_count.first))
+					   << std::endl;
+		hitmiss_writer.close();
 	}
 
 	void printCacheImage(const uint64_t &_arrive_time) {
-		std::string image_name = "img_" + std::to_string(this->cache_id) + "_" + std::to_string(_arrive_time) + ".csv";
+		std::string image_name = "img_l" + std::to_string(this->cache_id) + "_" + std::to_string(_arrive_time) + ".csv";
 		std::ofstream image_writer{image_name};
 		//Print Titles
-		image_writer << "BLOCK_INDEX,VALID,DIRTY";
-		for (size_t db = 0; db < std::get<0>(this->dimensions); db++)
-			image_writer << ",TAG[" + std::to_string(db) + "]";
+		image_writer << "B_IND";
+		for (size_t col = 0; col < std::get<1>(this->dimensions); col++)
+			image_writer << ",VALID[" + std::to_string(col) + "]" +
+							",DIRTY[" + std::to_string(col) + "]" +
+							",TAG[" + std::to_string(col) + "]";
 		image_writer << std::endl;
 		//Print Contents
 		for (size_t row = 0; row < std::get<2>(this->dimensions); row++) {
+			image_writer << "B[" + std::to_string(row) + "]";
 			for (size_t col = 0; col < std::get<1>(this->dimensions); col++) {
-				image_writer << "CACHE[" + std::to_string(row) + "][" + std::to_string(col) + "]";
 				const DataBlock &this_db = this->cache_array.at(row).at(col);
-				image_writer << "," + std::to_string(this_db.getValid()) + "," + std::to_string(this_db.getDirty());
-				for (size_t db = 0; db < std::get<0>(this->dimensions); db++)
-					image_writer << "," + std::to_string(this_db.getTag());
-				image_writer << std::endl;
+				image_writer << "," + std::to_string(this_db.getValid()) +
+								"," + std::to_string(this_db.getDirty()) +
+								"," + std::to_string(this_db.getTag());
 			}
+			image_writer << std::endl;
 		}
 		image_writer.close();
+
 	}
-
-/*	*//**
-	 * Report Contents of This Specific Cache to a New File
-	 * Open and Write to "image_L(Cache Level).txt"
-	 *//*
-	void printCacheImage2() {
-
-
-		std::ofstream outfile;
-		std::string filename = "image_L" + std::to_string(cache_id) + ".txt";
-		outfile.open(filename);
-		if (!outfile.is_open()) {
-			throw std::runtime_error("Couldn't open image file");
-		}
-
-		//Get the number of rows and columns
-		uint32_t colNum = std::get<1>(this->dimensions);
-		uint32_t rowNum = std::get<2>(this->dimensions);
-
-		std::cout << "Printing Image for Cache" << cache_id << "with" << rowNum << "rows and " << colNum << "cols"
-				  << std::endl;
-
-		//Printing the first line:
-		outfile << "Set Index || ";
-		for (uint32_t i = 0; i < colNum - 1; i++) {
-			outfile << "Block Index | Valid | Dirty | Tag || ";
-		}
-		outfile << "Block Index | Valid | Dirty | Tag" << std::endl;
-
-		//Printing the content:
-		uint32_t setIndex, blockIndex, tag;
-		bool valid, dirty;
-		for (uint32_t i = 0; i < rowNum; i++) {
-			setIndex = i;
-			outfile << setIndex << " || ";
-			for (uint32_t j = 0; j < colNum - 1; j++) {
-				blockIndex = setIndex + j;
-				valid = cache_array.at(i).at(j).getValid();
-				dirty = cache_array.at(i).at(j).getDirty();
-				tag = cache_array.at(i).at(j).getTag();
-				outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << " || ";
-			}
-			// Last block in the row:
-			blockIndex = setIndex + colNum - 1;
-			valid = cache_array.at(i).at(colNum - 1).getValid();
-			dirty = cache_array.at(i).at(colNum - 1).getDirty();
-			tag = cache_array.at(i).at(colNum - 1).getTag();
-			outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << std::endl;
-		}
-		std::cout << "Finished Printing Image for Cache" << cache_id << std::endl;
-		outfile.close();
-	}*/
 
 
 };

@@ -54,20 +54,26 @@ class Core {
 		return to_return;
 	}
 
-public:
+	/**
+ * Load instructions from file, then invoke mapped function from System
+ * Schedule all task-type instructions into task queue (unsorted)
+ * Execute all configuration-type instructions immediately
+ */
+	void loadInstructions() {
+		while (file_manipulator.first.good()) {
+			std::pair<std::string, ArgumentTuple_t> this_instruction = this->getNextInstruction();
+			SystemFunction_t this_system_function = instruction_map.at(this_instruction.first);
+			std::invoke(this_system_function.first, system, &this_instruction.second);
+		}
+	};
 
 	/**
-	 * Bind the File Reader and File Writer to Certain Files
-	 * Perform Check if Files are Detected
-	 * @param _global_reader_filename Filename of Input Files (containing instructions)
-	 * @param _global_writer_filename Filename of Output Files (containing all running-logs/hit-misses/images)
+	 * Initialize Core and Run Instructions
 	 */
-	explicit Core(const std::pair<std::string, std::string> &_filename) {
-		file_manipulator.first.open(_filename.first);
-		file_manipulator.second.open(_filename.second);
+	void initCore() {
 		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Found.");
 		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Found.");
-		system.setWriterPtr(&this->file_manipulator.second);
+		this->system.setWriterPtr(&this->file_manipulator.second);
 		instruction_map["con"] = {&System::setConfig, 3};
 		instruction_map["scd"] = {&System::setCacheDimension, 3};
 		instruction_map["scl"] = {&System::setCacheLatency, 2};
@@ -79,36 +85,36 @@ public:
 		instruction_map["pcr"] = {&System::taskPrintCacheRate, 2};
 		instruction_map["pci"] = {&System::taskPrintCacheImage, 2};
 		instruction_map["hat"] = {&System::haltProgram, 0};
+		this->loadInstructions();
+	}
+
+public:
+
+	/**
+	 * Bind the File Reader and File Writer to Certain Files to Default
+	 */
+	explicit Core() {
+		this->file_manipulator.first.open("instructions.txt");
+		this->file_manipulator.second.open("log_tasks.csv");
+	}
+
+	/**
+	 * Bind the File Reader and File Writer to Certain Files to Given File
+	 * @param _instruction_filename Filename of Input Files (containing instructions)
+	 */
+	explicit Core(const std::string &_instruction_filename) {
+		this->file_manipulator.first.open(_instruction_filename);
+		this->file_manipulator.second.open("log_tasks.csv");
 	}
 
 	/**
 	 * Destructor waits for I/O finishes before thread terminates
 	 */
 	~Core() {
-		file_manipulator.first.close();
-		file_manipulator.second.close();
+		this->file_manipulator.first.close();
+		this->file_manipulator.second.close();
 	}
 
-
-	/**
-	 * Load instructions from file, then invoke mapped function from System
-	 * Schedule all task-type instructions into task queue (unsorted)
-	 * Execute all configuration-type instructions immediately
-	 */
-	void loadInstructions() {
-		while (file_manipulator.first.good()) {
-			std::pair<std::string, ArgumentTuple_t> this_instruction = this->getNextInstruction();
-			SystemFunction_t this_system_function = instruction_map.at(this_instruction.first);
-			std::invoke(this_system_function.first, system, &this_instruction.second);
-		}
-	};
-
-	/**
-	 * Try to execute all tasks from Task Queue
-	 */
-	void runInstructions() {
-		this->system.runTaskQueue();
-	}
 
 };
 
