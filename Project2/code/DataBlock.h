@@ -9,7 +9,7 @@ private:
 	bool dirty{false};
 	uint32_t tag{0};
 	uint32_t block_size{0};
-	std::chrono::time_point<std::chrono::steady_clock> last_use{std::chrono::steady_clock::now()};
+	uint64_t last_use{0};
 public:
 
 	/**
@@ -29,7 +29,7 @@ public:
 		this->valid = _data_block.valid;
 		this->tag = _data_block.tag;
 		this->block_size = _data_block.block_size;
-		this->last_use = std::chrono::steady_clock::now();
+		this->last_use = _data_block.last_use;
 		return *this;
 	}
 
@@ -37,10 +37,10 @@ public:
 	 * Update this DataBlock with new tag value, make it valid, and record current time
 	 * @param _tag New tag value to be assigned to this DataBlock
 	 */
-	void update(const uint32_t &_tag) {
+	void update(const uint32_t &_tag, const uint64_t &_clock_time) {
 		this->valid = true;
 		this->tag = _tag;
-		this->last_use = std::chrono::steady_clock::now();
+		this->last_use = _clock_time;
 	}
 
 	/**
@@ -56,8 +56,8 @@ public:
 	 * Mark this DataBlock Dirty
 	 * Meaning this DataBlock needs to sync with parents
 	 */
-	void markDirty() {
-		this->last_use = std::chrono::steady_clock::now();
+	void markDirty(const uint64_t &_clock_time) {
+		this->last_use = _clock_time;
 		this->dirty = true;
 	}
 
@@ -66,8 +66,6 @@ public:
 	 * @return True if dirty, false otherwise
 	 */
 	bool getDirty() const {
-		if (!valid)
-			throw std::runtime_error("ERR Dirty Bit Cannot be Retrieved - Datablock NOT Valid");
 		return this->dirty;
 	}
 
@@ -84,8 +82,6 @@ public:
 	 * @return Tag retrieved
 	 */
 	uint32_t getTag() const {
-		if (!valid)
-			throw std::runtime_error("ERR Tag Cannot be Retrieved - Datablock NOT Valid");
 		return this->tag;
 	}
 

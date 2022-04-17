@@ -17,11 +17,11 @@ class Core {
 	uint64_t clock{0};
 	std::unordered_map<std::string, SystemFunction_t> instruction_map;
 
-/**
- * Convert an String Argument to Integer 32-bit type
- * @param _char_to_check Character to be checked
- * @return True if is a Numeric Digit, false otherwise
- */
+	/**
+	 * Convert an String Argument to Integer 32-bit type
+	 * @param _char_to_check Character to be checked
+	 * @return True if is a Numeric Digit, false otherwise
+	 */
 	uint32_t argumentToInt(const std::string &_argument) {
 		bool dollarSignDetected = _argument.at(0) == '$';
 		bool allOtherIsDigit = std::all_of(_argument.begin() + 1, _argument.end(), ::isdigit);
@@ -30,11 +30,11 @@ class Core {
 		return std::stoi(std::string(_argument.begin() + 1, _argument.end()), nullptr, 10);
 	}
 
-/**
- * Get the Next Instruction
- * Warning: This Function does NOT handle EOF
- * @return [INSTRUCTION_STRING][[ARGUMENT1][ARGUMENT1][ARGUMENT1]]
- */
+	/**w
+	 * Get the Next Instruction
+	 * Warning: This Function does NOT handle EOF
+	 * @return [INSTRUCTION_STRING][[ARGUMENT1][ARGUMENT2][ARGUMENT3]]
+	 */
 	std::pair<std::string, ArgumentTuple_t> getNextInstruction() {
 		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Initialized.");
 		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Initialized.");
@@ -54,19 +54,14 @@ class Core {
 		return to_return;
 	}
 
-	void report(const auto &_formatter_string) {
-		std::cout << "$CORE " << _formatter_string << std::endl;
-	}
-
-
 public:
 
-/**
- * Bind the File Reader and File Writer to Certain Files
- * Perform Check if Files are Detected
- * @param _global_reader_filename Filename of Input Files (containing instructions)
- * @param _global_writer_filename Filename of Output Files (containing all running-logs/hit-misses/images)
- */
+	/**
+	 * Bind the File Reader and File Writer to Certain Files
+	 * Perform Check if Files are Detected
+	 * @param _global_reader_filename Filename of Input Files (containing instructions)
+	 * @param _global_writer_filename Filename of Output Files (containing all running-logs/hit-misses/images)
+	 */
 	explicit Core(const std::pair<std::string, std::string> &_filename) {
 		file_manipulator.first.open(_filename.first);
 		file_manipulator.second.open(_filename.second);
@@ -81,16 +76,25 @@ public:
 		instruction_map["tre"] = {&System::taskReadAddress, 2};
 		instruction_map["twr"] = {&System::taskWriteAddress, 2};
 		instruction_map["ins"] = {&System::initSystem, 0};
-		instruction_map["pcr"] = {&System::printCacheRate, 1};
-		instruction_map["pci"] = {&System::printCacheImage, 1};
+		instruction_map["pcr"] = {&System::printCacheRate, 2};
+		instruction_map["pci"] = {&System::printCacheImage, 2};
 		instruction_map["hat"] = {&System::haltProgram, 0};
 	}
 
+	/**
+	 * Destructor waits for I/O finishes before thread terminates
+	 */
 	~Core() {
 		file_manipulator.first.close();
 		file_manipulator.second.close();
 	}
 
+
+	/**
+	 * Load instructions from file, then invoke mapped function from System
+	 * Schedule all task-type instructions into task queue (unsorted)
+	 * Execute all configuration-type instructions immediately
+	 */
 	void loadInstructions() {
 		while (file_manipulator.first.good()) {
 			std::pair<std::string, ArgumentTuple_t> this_instruction = this->getNextInstruction();
@@ -99,8 +103,11 @@ public:
 		}
 	};
 
+	/**
+	 * Try to execute all tasks from Task Queue
+	 */
 	void runInstructions() {
-
+		this->system.runTaskQueue();
 	}
 
 };

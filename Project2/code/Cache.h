@@ -95,12 +95,18 @@ public:
 		this->ready.at(0) = true;
 	}
 
+	void makeAsTopCache() {
+		this->parent_cache_ptr = nullptr;
+		this->ready.at(1) = true;
+	}
+
 	/**
  * Create Parent Cache
  * Mark Parent Cache has been set in Ready
  */
 	void makeParent() {
 		this->parent_cache_ptr = std::make_unique<Cache>();
+		this->parent_cache_ptr->setChild(this);
 		this->ready.at(0) = true;
 	}
 
@@ -242,48 +248,49 @@ public:
 		if (!this->ready.at(7))
 			throw std::runtime_error("ERR Cannot Print Rate - Ofstream Not Ready");
 
-        std::ofstream outfile;
-        std::string filename = "image_L" + std::to_string(cache_id) + ".txt";
-        outfile.open(filename);
-        if(!outfile.is_open()){
-            throw std::runtime_error("Couldn't open image file");
-        }
+		std::ofstream outfile;
+		std::string filename = "image_L" + std::to_string(cache_id) + ".txt";
+		outfile.open(filename);
+		if (!outfile.is_open()) {
+			throw std::runtime_error("Couldn't open image file");
+		}
 
-        //Get the number of rows and columns
-        uint32_t colNum = std::get<1>(this->dimensions);
-        uint32_t rowNum = std::get<2>(this->dimensions);
+		//Get the number of rows and columns
+		uint32_t colNum = std::get<1>(this->dimensions);
+		uint32_t rowNum = std::get<2>(this->dimensions);
 
-        std::cout << "Printing Image for Cache" << cache_id << "with" << rowNum << "rows and " << colNum << "cols" << std::endl;
+		std::cout << "Printing Image for Cache" << cache_id << "with" << rowNum << "rows and " << colNum << "cols"
+				  << std::endl;
 
-        //Printing the first line:
-        outfile << "Set Index || ";
-        for(uint32_t i = 0; i < colNum-1; i++){
-            outfile << "Block Index | Valid | Dirty | Tag || ";
-        }
-        outfile << "Block Index | Valid | Dirty | Tag" << std::endl;
+		//Printing the first line:
+		outfile << "Set Index || ";
+		for (uint32_t i = 0; i < colNum - 1; i++) {
+			outfile << "Block Index | Valid | Dirty | Tag || ";
+		}
+		outfile << "Block Index | Valid | Dirty | Tag" << std::endl;
 
-        //Printing the content:
-        uint32_t setIndex, blockIndex,tag;
-        bool valid, dirty;
-        for(uint32_t i = 0; i < rowNum; i++){
-            setIndex = i;
-            outfile << setIndex << " || ";
-            for(uint32_t j = 0; j < colNum - 1; j++){
-                blockIndex = setIndex + j;
-                valid = cache_array.at(i).at(j).getValid();
-                dirty = cache_array.at(i).at(j).getDirty();
-                tag = cache_array.at(i).at(j).getTag();
-                outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << " || ";
-            }
-            // Last block in the row:
-            blockIndex = setIndex + colNum-1;
-            valid = cache_array.at(i).at(colNum-1).getValid();
-            dirty = cache_array.at(i).at(colNum-1).getDirty();
-            tag = cache_array.at(i).at(colNum-1).getTag();
-            outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << std::endl;
-        }
-        std::cout << "Finished Printing Image for Cache" << cache_id << std::endl;
-        outfile.close();
+		//Printing the content:
+		uint32_t setIndex, blockIndex, tag;
+		bool valid, dirty;
+		for (uint32_t i = 0; i < rowNum; i++) {
+			setIndex = i;
+			outfile << setIndex << " || ";
+			for (uint32_t j = 0; j < colNum - 1; j++) {
+				blockIndex = setIndex + j;
+				valid = cache_array.at(i).at(j).getValid();
+				dirty = cache_array.at(i).at(j).getDirty();
+				tag = cache_array.at(i).at(j).getTag();
+				outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << " || ";
+			}
+			// Last block in the row:
+			blockIndex = setIndex + colNum - 1;
+			valid = cache_array.at(i).at(colNum - 1).getValid();
+			dirty = cache_array.at(i).at(colNum - 1).getDirty();
+			tag = cache_array.at(i).at(colNum - 1).getTag();
+			outfile << blockIndex << " | " << valid << " | " << dirty << " | " << tag << std::endl;
+		}
+		std::cout << "Finished Printing Image for Cache" << cache_id << std::endl;
+		outfile.close();
 	}
 
 

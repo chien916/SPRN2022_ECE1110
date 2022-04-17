@@ -43,9 +43,6 @@ private:
 	 */
 	std::vector<Task> task_queue;
 
-	// Current task running in progress (No need to initialize)
-	std::vector<Task>::iterator current_task{task_queue.begin()};
-
 	// Status of Initialization. All Members MUST be true before System Initialization
 	std::array<bool, 7> ready{false, false, false, false, false, false, false};
 
@@ -71,10 +68,20 @@ private:
 	 * Sort the Task Queue by Arriving Time
 	 * Mark Task Queue as Ready
 	 */
-	void sortProcessQueue() {
+	void sortTaskQueue() {
 		std::sort(task_queue.begin(), task_queue.end());
 		this->ready.at(6) = true;
 	}
+
+
+	uint64_t requestReadAddress(const uint32_t &_address) {
+
+	}
+
+	uint64_t requestWriteAddress(const uint32_t &_address) {
+
+	}
+
 
 public:
 
@@ -124,6 +131,8 @@ public:
 		if (this_cache_ptr->operator bool())
 			throw std::invalid_argument("ERR con Called after inc");
 		this_cache_ptr->setId(1);
+		this_cache_ptr->setChild(nullptr);
+		if (cache_count == 1) this_cache_ptr->makeAsTopCache();
 		for (size_t i = 2; i <= _cache_count; i++) {
 			this_cache_ptr->makeParent();
 			this_cache_ptr = this_cache_ptr->getParentPtr();
@@ -248,7 +257,7 @@ public:
 			throw std::invalid_argument("ERR Cannot Task Once System is Initialized");
 		uint32_t _address = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
-		this->task_queue.emplace_back(TASKTYPE_READ, _address, _arrive_time);
+		this->task_queue.emplace_back(task_t::task_readAddress, _address, _arrive_time);
 		return true;
 	}
 
@@ -266,7 +275,7 @@ public:
 			throw std::invalid_argument("ERR Cannot Task Once System is Initialized");
 		uint32_t _address = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
-		this->task_queue.emplace_back(TASKTYPE_WRITE, _address, _arrive_time);
+		this->task_queue.emplace_back(task_t::task_writeAddress, _address, _arrive_time);
 		return true;
 	}
 
@@ -278,7 +287,7 @@ public:
 	bool initSystem(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
-		sortProcessQueue();
+		sortTaskQueue();
 		this->ready.at(6) = true;
 		if (!this->operator bool())
 			throw std::runtime_error("ERR System Cannot Initialize - System Not Ready");
@@ -295,12 +304,15 @@ public:
 	bool printCacheRate(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		if (this->operator bool())
+			throw std::invalid_argument("ERR Cannot Report Once System is Initialized");
 		uint32_t _cache_level = std::get<0>(*_arguments);
+		uint32_t _arrive_time = std::get<1>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
 		if (!*this_cache_ptr)
 			throw std::runtime_error("ERR Cache is NOT Initialized");
-		this_cache_ptr->printHitMissRate(global_writer_ptr);
+		this->task_queue.emplace_back(task_t::task_reportHitMiss, _cache_level, _arrive_time);
 		return true;
 	}
 
@@ -314,25 +326,27 @@ public:
 	bool printCacheImage(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
+		if (this->operator bool())
+			throw std::invalid_argument("ERR Cannot Report Once System is Initialized");
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
-		if (!*this_cache_ptr)
-			throw std::runtime_error("ERR Cache is NOT Initialized");
-		this_cache_ptr->printCacheImage();
 		return true;
 	}
 
 	/**
 	 * hat
-	 * Return False so that Core will Stop
-	 * @return ALWAYS FALSE
+	 * Stop Fetching Instruction
+	 * @return ALWAYS TRUE
 	 */
 	bool haltProgram(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
-
 		return false;
+	}
+
+	void runTaskQueue() {
+
 	}
 
 };

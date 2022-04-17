@@ -18,12 +18,14 @@
 #include <algorithm>
 #include <unordered_map>
 #include <iostream>
-#include <set>
 #include <iomanip>
 #include <functional>
 #include <string>
-#define TASKTYPE_READ false
-#define TASKTYPE_WRITE true
+
+enum class task_t {
+	task_readAddress, task_writeAddress, task_reportHitMiss, task_reportImage
+};
+
 
 #define POLICY_WBWA false
 #define POLICY_WTNWA true

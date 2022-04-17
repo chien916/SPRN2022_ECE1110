@@ -6,15 +6,15 @@
 
 class Task {
 private:
-	bool task_type;
-	uint32_t address;
+	task_t task_type;
+	uint32_t task_value;
 	uint64_t arrive_time;
 	bool ready;
 public:
 
-	Task(const bool &_read, const uint32_t &_address, const uint64_t &_arrive_time) {
-		this->task_type = _read;
-		this->address = _address;
+	Task(const task_t &_task_type, const uint32_t &_task_value, const uint64_t &_arrive_time) {
+		this->task_type = _task_type;
+		this->task_value = _task_value;
 		this->arrive_time = _arrive_time;
 		this->ready = true;
 	}
@@ -26,15 +26,15 @@ public:
 		return this->arrive_time < _task.arrive_time;
 	}
 
-	bool getTaskType() const {
+	[[nodiscard]] task_t getTaskType() const {
 		return this->task_type;
 	}
 
-	uint32_t getAddress() const {
-		return this->address;
+	[[nodiscard]] uint32_t getTaskValue() const {
+		return this->task_value;
 	}
 
-	uint64_t getArriveTime() const {
+	[[nodiscard]] uint64_t getArriveTime() const {
 		return this->arrive_time;
 	}
 
