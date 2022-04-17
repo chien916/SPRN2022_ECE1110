@@ -96,12 +96,15 @@ public:
 		return to_return;
 	}*/
 
-	bool findTag(const uint32_t &_address) const {
+	bool findTag(const uint32_t &_address) {
 		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
 		for (const DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
-			if (this_dataBlock.compareTag(std::get<0>(this_index_tuple)))
+			if (this_dataBlock.compareTag(std::get<0>(this_index_tuple))) {
+				hit_miss_count.first++;
 				return true;
+			}
 		}
+		hit_miss_count.second++;
 		return false;
 	}
 

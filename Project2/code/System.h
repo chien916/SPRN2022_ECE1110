@@ -77,18 +77,32 @@ private:
 		uint64_t elapsed_clock{0};//elapsed clock cycles default is 0
 		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
 			elapsed_clock += this->memory_latency;//Tag is pseudo found and add memory latency to elapsed clock
-		} else {//If this is called by digging into Next Parental Cache (one level below), See if Tag can be found
-			elapsed_clock += this->readCache(_cache->getParentPtr(), _address);//add read latency to elapsed clock
-			while (!_cache->allocateTag(_address, clock_count + elapsed_clock)) {//while this cache is full
-				auto poped_db = _cache->popFlushLeastUsedTag(_address);//pop a tag from this cache and flush that field
-				if (poped_db.first) //if the poped tag is dirty, sync the address with parental cache (write)
-					elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write into parent cache
+		} else {//If this is called by digging into Next Parental Cache (one level below)
+			if (_cache->findTag(_address)) {//if there's a tag match from a set -- READ HIT
+				elapsed_clock += _cache->getLatency();//takes this cache's latency to read
+			} else {//if there's NO tag match from a set -- READ MISS
+				elapsed_clock += this->readCache(_cache->getParentPtr(), _address);//sum latencies of parents to read
+				while (!_cache->allocateTag(_address, clock_count + elapsed_clock)) {//while allocation failed (full)
+					auto poped_db = _cache->popFlushLeastUsedTag(_address);//pop LRU tag and flush LRU field
+					if (poped_db.first) //if the poped LRU tag is dirty, sync the address with parental cache (write)
+						elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write  parent cache
+				}
 			}
 		}
 		return elapsed_clock;
 	}
 
 	[[nodiscard]] uint64_t writeCache(Cache *_cache, const uint32_t &_address) {
+		uint64_t elapsed_clock{0};//elapsed clock cycles default is 0
+		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
+			elapsed_clock += this->memory_latency;//Tag is pseudo written and add memory latency to elapsed clock
+		} else {//If this is called by digging into Next Parental Cache (one level below)
+			if (read_write_policy == POLICY_WBWA) {//if the policy is write-back and write-allocate
+
+			} else if (read_write_policy == POLICY_WTNWA) {//if the policy is write-thru and non-write allocate
+
+			}
+		}
 
 	}
 
