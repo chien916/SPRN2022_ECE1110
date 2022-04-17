@@ -76,14 +76,12 @@ private:
 	uint64_t reqReadAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
 		uint64_t elapsed_block{0};//elpased clock cycles
 		Cache *this_cache_ptr = top_cache_ptr.get();//start from top (childest) cache
-
 		//Compare Tag with ALL Sets
-		for (DataBlock &this_db: (*this_cb_ptr)) {
-			bool ifHit = this_db.compareTag(std::get<0>(this_address_tuple));
-			if (ifHit) {//if found a tag match from one of the set
-				elapsed_block += this_cache_ptr->getLatency();
-				break;
-			}
+		bool hitOrMiss = top_cache_ptr->findTag(_address);
+		if (hitOrMiss == C_HIT) {
+
+		} else {
+
 		}
 
 		return 0;

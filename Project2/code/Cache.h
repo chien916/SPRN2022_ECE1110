@@ -53,6 +53,32 @@ private:
 	//Status of Initialization. All Members MUST be true before Cache Initialization
 	std::array<bool, 8> ready{false, false, false, false, false, false, false, false};
 
+	/**
+ * Decode a 32-bit Address to 3-fields Index-based Tuple indicating where the Data could be
+ * Warning: This function should ONLY be used inside this Cache Class
+ * @param address_val Raw 32-bit address
+ * @return [Tag Value][Index of Index][Index of Offset]
+ */
+	[[nodiscard]] std::tuple<uint32_t, uint32_t, uint32_t> addressDecode(const uint32_t &address_val) const {
+		std::tuple<uint32_t, uint32_t, uint32_t> indices;
+		std::get<0>(indices) =
+				address_val >> (std::get<2>(this->address_partition) + std::get<1>(this->address_partition));
+		std::get<1>(indices) =
+				address_val << std::get<0>(this->address_partition)
+							>> (std::get<2>(this->address_partition) + std::get<0>(this->address_partition));
+		std::get<2>(indices) =
+				address_val << (std::get<0>(this->address_partition) + std::get<1>(this->address_partition))
+							>> (std::get<0>(this->address_partition) + std::get<1>(this->address_partition));
+		return indices;
+	}
+
+	[[nodiscard]] uint32_t addressEncode(const std::tuple<uint32_t, uint32_t, uint32_t> &_add_part) {
+		uint32_t address_val = std::get<0>(_add_part);
+		address_val = (address_val << std::get<1>(this->address_partition)) + std::get<1>(_add_part);;
+		address_val = (address_val << std::get<2>(this->address_partition)) + std::get<2>(_add_part);;
+		return address_val;
+	}
+
 
 public:
 	/**
@@ -79,28 +105,29 @@ public:
 		return false;
 	}
 
-
-
-
-
-	/**
-	 * Decode a 32-bit Address to 3-fields Index-based Tuple indicating where the Data could be
-	 * Warning: This function should ONLY be used inside this Cache Class
-	 * @param address_val Raw 32-bit address
-	 * @return [Tag Value][Index of Index][Index of Offset]
-	 */
-	[[nodiscard]] std::tuple<uint32_t, uint32_t, uint32_t> addressDecode(const uint32_t &address_val) const {
-		std::tuple<uint32_t, uint32_t, uint32_t> indices;
-		std::get<0>(indices) =
-				address_val >> (std::get<2>(this->address_partition) + std::get<1>(this->address_partition));
-		std::get<1>(indices) =
-				address_val << std::get<0>(this->address_partition)
-							>> (std::get<2>(this->address_partition) + std::get<0>(this->address_partition));
-		std::get<2>(indices) =
-				address_val << (std::get<0>(this->address_partition) + std::get<1>(this->address_partition))
-							>> (std::get<0>(this->address_partition) + std::get<1>(this->address_partition));
-		return indices;
+	[[nodiscard]] std::pair<bool, uint32_t> popFlushLeastUsedTag(const uint32_t &_address) {
+		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
+		DataBlock *least_used_db = &(cache_array.at(std::get<1>(this_index_tuple)).at(0));
+		for (DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
+			if (this_dataBlock < (*least_used_db))
+				least_used_db = &this_dataBlock;
+		}
+		std::pair<bool, uint32_t> dirty_and_address{least_used_db->getDirty(), least_used_db->getTag()};
+		least_used_db->flush();
+		return dirty_and_address;
 	}
+
+	bool allocateTag(const uint32_t &_address, const uint64_t &_clock_time) {
+		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
+		for (DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
+			if (!this_dataBlock.getValid()) {
+				this_dataBlock.update(std::get<0>(this_index_tuple), _clock_time);
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	/**
 	 * Retrieve the Pointer of Parent Cache
