@@ -73,16 +73,44 @@ private:
 		this->ready.at(6) = true;
 	}
 
+	[[nodiscard]] uint64_t readCache(Cache *_cache, const uint32_t &_address) {
+		uint64_t elapsed_clock{0};//elapsed clock cycles default is 0
+		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
+			elapsed_clock += this->memory_latency;//Tag is pseudo found and add memory latency to elapsed clock
+		} else {//If this is called by digging into Next Parental Cache (one level below), See if Tag can be found
+			elapsed_clock += this->readCache(_cache->getParentPtr(), _address);//add read latency to elapsed clock
+			while (!_cache->allocateTag(_address, clock_count + elapsed_clock)) {//while this cache is full
+				auto poped_db = _cache->popFlushLeastUsedTag(_address);//pop a tag from this cache and flush that field
+				if (poped_db.first) //if the poped tag is dirty, sync the address with parental cache (write)
+					elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write into parent cache
+			}
+		}
+		return elapsed_clock;
+	}
+
+	[[nodiscard]] uint64_t writeCache(Cache *_cache, const uint32_t &_address) {
+
+	}
+
+
 	uint64_t reqReadAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
 		uint64_t elapsed_block{0};//elpased clock cycles
 		Cache *this_cache_ptr = top_cache_ptr.get();//start from top (childest) cache
-		//Compare Tag with ALL Sets
-		bool hitOrMiss = top_cache_ptr->findTag(_address);
-		if (hitOrMiss == C_HIT) {
+		{
 
-		} else {
+			if (hitOrMiss == C_HIT) {//If Hits any Set from this Cache, Add Latency of this Cache
+				elapsed_block += this_cache_ptr->getLatency();
+			} else {//If Misses, Find Value from Parent Cache, and Write to this Cache
+				Cache *digged_cache_ptr = this_cache_ptr->getParentPtr();
+				if (digged_cache_ptr == nullptr)
+					elapsed_block += this->memory_latency;
+				else {
 
+				}
+
+			}
 		}
+
 
 		return 0;
 	}
