@@ -31,5 +31,8 @@ enum class task_t {
 #define POLICY_WBWA false
 #define POLICY_WTNWA true
 
+#define C_HIT true
+#define C_MISS false
+
 
 #endif //CODE_INCLUDE_H

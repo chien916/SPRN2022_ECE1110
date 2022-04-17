@@ -62,7 +62,7 @@ public:
 	}
 
 	/**
-	 * Test if this Datablock needs to sync with parents
+	 * Test if this Datablock needs to sync with parents (For Printing Purpose)
 	 * @return True if dirty, false otherwise
 	 */
 	bool getDirty() const {
@@ -70,7 +70,7 @@ public:
 	}
 
 	/**
-	 * Test if this Datablock has been used at least once
+	 * Test if this Datablock has been used at least once (For Printing Purpose)
 	 * @return True if valid, false otherwise
 	 */
 	bool getValid() const {
@@ -78,7 +78,7 @@ public:
 	}
 
 	/**
-	 * Retrieve the tag of this DataBlock
+	 * Retrieve the tag of this DataBlock (For Printing Purpose)
 	 * @return Tag retrieved
 	 */
 	uint32_t getTag() const {

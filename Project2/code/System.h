@@ -73,16 +73,25 @@ private:
 		this->ready.at(6) = true;
 	}
 
-
 	uint64_t reqReadAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
-		uint64_t clock_span = top_cache_ptr->read(_address, this->read_write_policy);
-		return clock_span;
+		uint64_t elapsed_block{0};//elpased clock cycles
+		Cache *this_cache_ptr = top_cache_ptr.get();//start from top (childest) cache
+
+		//Compare Tag with ALL Sets
+		for (DataBlock &this_db: (*this_cb_ptr)) {
+			bool ifHit = this_db.compareTag(std::get<0>(this_address_tuple));
+			if (ifHit) {//if found a tag match from one of the set
+				elapsed_block += this_cache_ptr->getLatency();
+				break;
+			}
+		}
+
+		return 0;
 	}
 
-	//TO-DO Algorithms incomplete
 	uint64_t reqWrtAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
-		uint64_t clock_span = 0;
-		return clock_span;
+		//To-Do
+		return 0;
 	}
 
 	uint64_t reqRptHmr(const uint32_t &_cache_level, const uint64_t &_arrive_time) {

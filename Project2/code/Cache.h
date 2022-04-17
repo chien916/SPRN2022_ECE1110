@@ -53,11 +53,41 @@ private:
 	//Status of Initialization. All Members MUST be true before Cache Initialization
 	std::array<bool, 8> ready{false, false, false, false, false, false, false, false};
 
+
+public:
+	/**
+	 * Check if ALL Data Members Are Initialized, including Cache Array
+	 * @return True if All Initialized, false if At Least One Member if NOT Initialized
+	 */
+	explicit operator bool() const {
+		bool if_no_false_found = std::find(this->ready.begin(), this->ready.end(), false) == this->ready.end();
+		return if_no_false_found;
+	}
+
+/*
+	std::vector<DataBlock> *locateCacheBlock(const std::tuple<uint32_t, uint32_t, uint32_t> &_address_tuple) {
+		std::vector<DataBlock> *to_return = &(this->cache_array.at(std::get<1>(_address_tuple)));
+		return to_return;
+	}*/
+
+	bool findTag(const uint32_t &_address) const {
+		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
+		for (const DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
+			if (this_dataBlock.compareTag(std::get<0>(this_index_tuple)))
+				return true;
+		}
+		return false;
+	}
+
+
+
+
+
 	/**
 	 * Decode a 32-bit Address to 3-fields Index-based Tuple indicating where the Data could be
 	 * Warning: This function should ONLY be used inside this Cache Class
 	 * @param address_val Raw 32-bit address
-	 * @return [Index of Tag][Index of Index][Index of Offset]
+	 * @return [Tag Value][Index of Index][Index of Offset]
 	 */
 	[[nodiscard]] std::tuple<uint32_t, uint32_t, uint32_t> addressDecode(const uint32_t &address_val) const {
 		std::tuple<uint32_t, uint32_t, uint32_t> indices;
@@ -71,8 +101,6 @@ private:
 							>> (std::get<0>(this->address_partition) + std::get<1>(this->address_partition));
 		return indices;
 	}
-
-public:
 
 	/**
 	 * Retrieve the Pointer of Parent Cache
@@ -148,6 +176,14 @@ public:
 	}
 
 	/**
+	 * Get the Latency of this Specific Cache
+	 * @return Number of Clock Cycles that Reading a Data Requires
+	 */
+	[[nodiscard]] uint64_t getLatency() const {
+		return this->latency;
+	}
+
+	/**
 	 * Set the Cache Level ID of this Specific Cache
 	 * Mark Cache ID has been set in Ready
 	 * @param _cache_id
@@ -181,41 +217,44 @@ public:
 		this->ready.at(4) = true;
 	}
 
-	/**
-	 * Attempt to Read Data from a Raw 32-bit Address with Certain Policy
-	 * @param _address_val Raw 32-bit Address (Memory Data)
-	 * @param _policy True if WRITE-BACK, false if WRITE THRU
-	 * @return Number of Clock Cycles Consumed to Read the Data
-	 */
-	uint64_t read(const uint32_t &_address_val, const bool &_policy) {
-		//TODO - ALGORITHMS INCOMPLETE!!!
-		if (!this->operator bool())
-			throw std::runtime_error("ERR Cache Cannot Read - Cache Not Ready");
-		std::tuple<uint32_t, uint32_t, uint32_t> indices = this->addressDecode(_address_val);
-		for (const DataBlock &cb: cache_array.at(std::get<1>(indices))) {
-			if (cb.compareTag(std::get<0>(indices))) {
-				this->hit_miss_count.first++;
-				return this->latency;//Hit
-			} else {
-				this->hit_miss_count.second++;
-				if (this->parent_cache_ptr) {//Hit - Go to Parent Cache
-					return this->latency + this->parent_cache_ptr->read(_address_val, _policy);//Miss
-				} else {//Miss - Go to Memory
-					return this->latency + this->memory_latency;
-				}
-			}
-		}
-		return false;
-	}
+//	/**
+//	 * Attempt to Read Data from a Raw 32-bit Address with Certain Policy
+//	 * @param _address_val Raw 32-bit Address (Memory Data)
+//	 * @param _policy True if WRITE-BACK, false if WRITE-THRU
+//	 * @return Number of Clock Cycles Consumed to Read the Data
+//	 */
+//	bool read(const uint32_t &_address_val, const bool &_policy) {
+//		if (!this->operator bool())
+//			throw std::runtime_error("ERR Cache Cannot Read - Cache Not Ready");
+//		std::tuple<uint32_t, uint32_t, uint32_t> indices = this->addressDecode(_address_val);
+//		for (const DataBlock &cb: cache_array.at(std::get<1>(indices))) {
+//			if (cb.compareTag(std::get<0>(indices))) {
+//				this->hit_miss_count.first++;
+//				return this->latency;//Hit
+//			} else {
+//				this->hit_miss_count.second++;
+//				if (this->parent_cache_ptr) {//Hit - Go to Parent Cache
+//					return this->latency + this->parent_cache_ptr->read(_address_val, _policy);//Miss
+//				} else {//Miss - Go to Memory
+//					return this->latency + this->memory_latency;
+//				}
+//			}
+//		}
+//		return false;
+//	}
 
-	/**
-	 * Check if ALL Data Members Are Initialized, including Cache Array
-	 * @return True if All Initialized, false if At Least One Member if NOT Initialized
-	 */
-	explicit operator bool() const {
-		bool if_no_false_found = std::find(this->ready.begin(), this->ready.end(), false) == this->ready.end();
-		return if_no_false_found;
-	}
+/*	*//**
+	 * Attempt to Write Data to a Raw 32-bit Address with Certain Policy
+	 * @param _address_val Raw 32-bit Address (Memory Data)
+	 * @param _policy True if WRITE-ALLOCATE, false if NON-WRITE-ALLOCATE
+	 * @return Number of Clock Cycles Consumed to Write the Data
+	 *//*
+	uint64_t write(const uint32_t &_address_val, const bool &_policy) {
+
+	}*/
+
+
+
 
 	/**
 	 * Report Hit and Misses Count to File.
@@ -257,7 +296,6 @@ public:
 			image_writer << std::endl;
 		}
 		image_writer.close();
-
 	}
 
 
