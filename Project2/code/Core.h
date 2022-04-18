@@ -11,10 +11,9 @@
 class Core {
 	using ArgumentTuple_t = std::tuple<uint32_t, uint32_t, uint32_t>;
 	using SystemFunction_t = std::pair<bool (System::*)(ArgumentTuple_t *), size_t>;
+
 	System system;
-	std::tuple<uint32_t, uint32_t, uint32_t> current_arguments;
-	std::pair<std::ifstream, std::ofstream> file_manipulator;
-	uint64_t clock{0};
+	std::ifstream instruction_reader;
 	std::unordered_map<std::string, SystemFunction_t> instruction_map;
 
 	/**
@@ -36,17 +35,15 @@ class Core {
 	 * @return [INSTRUCTION_STRING][[ARGUMENT1][ARGUMENT2][ARGUMENT3]]
 	 */
 	std::pair<std::string, ArgumentTuple_t> getNextInstruction() {
-		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Initialized.");
-		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Initialized.");
+		if (instruction_reader.is_open()) throw std::runtime_error("ERR Input File NOT Initialized.");
 		std::string this_instruction_string, this_argument_string;
 		std::pair<std::string, ArgumentTuple_t> to_return{"", {0, 0, 0}};
 		do {
-			file_manipulator.first >> this_instruction_string;
-		} while (instruction_map.find(this_instruction_string) == instruction_map.end() &&
-				 file_manipulator.first.good());
+			instruction_reader >> this_instruction_string;
+		} while (instruction_map.find(this_instruction_string) == instruction_map.end() && instruction_reader.good());
 		to_return.first = this_instruction_string;
 		for (size_t i = 0; i < instruction_map.at(this_instruction_string).second; i = i + 1) {
-			file_manipulator.first >> this_argument_string;
+			instruction_reader >> this_argument_string;
 			if (i == 0) std::get<0>(to_return.second) = argumentToInt(this_argument_string);
 			else if (i == 1) std::get<1>(to_return.second) = argumentToInt(this_argument_string);
 			else if (i == 2) std::get<2>(to_return.second) = argumentToInt(this_argument_string);
@@ -60,7 +57,7 @@ class Core {
  * Execute all configuration-type instructions immediately
  */
 	void loadInstructions() {
-		while (file_manipulator.first.good()) {
+		while (instruction_reader.good()) {
 			std::pair<std::string, ArgumentTuple_t> this_instruction = this->getNextInstruction();
 			SystemFunction_t this_system_function = instruction_map.at(this_instruction.first);
 			std::invoke(this_system_function.first, system, &this_instruction.second);
@@ -71,9 +68,7 @@ class Core {
 	 * Initialize Core and Run Instructions
 	 */
 	void initCore() {
-		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Found.");
-		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Found.");
-		this->system.setWriterPtr(&this->file_manipulator.second);
+		if (!instruction_reader.is_open()) throw std::runtime_error("ERR Input File NOT Found.");
 		instruction_map["con"] = {&System::setConfig, 3};
 		instruction_map["scd"] = {&System::setCacheDimension, 3};
 		instruction_map["scl"] = {&System::setCacheLatency, 2};
@@ -94,8 +89,7 @@ public:
 	 * Bind the File Reader and File Writer to Certain Files to Default
 	 */
 	explicit Core() {
-		this->file_manipulator.first.open("instructions.txt");
-		this->file_manipulator.second.open("log_tasks.csv");
+		this->instruction_reader.open("instructions.txt");
 	}
 
 	/**
@@ -103,16 +97,14 @@ public:
 	 * @param _instruction_filename Filename of Input Files (containing instructions)
 	 */
 	explicit Core(const std::string &_instruction_filename) {
-		this->file_manipulator.first.open(_instruction_filename);
-		this->file_manipulator.second.open("log_tasks.csv");
+		this->instruction_reader.open(_instruction_filename);
 	}
 
 	/**
 	 * Destructor waits for I/O finishes before thread terminates
 	 */
 	~Core() {
-		this->file_manipulator.first.close();
-		this->file_manipulator.second.close();
+		this->instruction_reader.close();
 	}
 
 

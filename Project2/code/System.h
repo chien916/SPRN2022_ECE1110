@@ -36,7 +36,7 @@ private:
 	 * use (*global_writer_ptr).operator<<() to write
 	 * e.g. (*global_writer_ptr)<<("THINGS TO WRITE")<<std::endl;
 	 */
-	std::ofstream *global_writer_ptr;
+	std::ofstream report_writer;
 
 	/* #6 Container holding tasks need to be done
 	 * Ready if Sorted.
@@ -175,6 +175,8 @@ public:
 			this_cache_ptr->setId(i);
 		}
 		this->ready.at(3) = true;
+		this->report_writer.open("log_system.csv");
+		this->ready.at(5) = true;
 		return true;
 	}
 
@@ -244,18 +246,6 @@ public:
 		uint32_t _latency = std::get<0>(*_arguments);
 		this->memory_latency = _latency;
 		this->ready.at(4) = true;
-		return true;
-	}
-
-	/**
-	 * Set the Pointer of File Writer
-	 * Mark Pointer of File Writer as Ready
-	 * @param _global_writer Pointer of File Writer
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
-	bool setWriterPtr(std::ofstream *_global_writer) {
-		this->global_writer_ptr = _global_writer;
-		this->ready.at(5) = true;
 		return true;
 	}
 
@@ -384,13 +374,15 @@ public:
 
 	void runTaskQueue() {
 		auto current_task_ptr = this->task_queue.begin();
-		while (current_task_ptr != this->task_queue.end() && current_task_ptr->getTaskType() != task_t::task_halt) {
-			while (current_task_ptr->getArriveTime() <= clock_count) {
+		while (current_task_ptr != this->task_queue.end()) {
+			if (current_task_ptr->getArriveTime() <= clock_count) {
 				task_t this_task = current_task_ptr->getTaskType();
 				uint32_t this_value = current_task_ptr->getTaskValue();
 				uint32_t this_arrive_time = current_task_ptr->getArriveTime();
-				uint64_t add_clk{0};
-				if (this_task == task_t::task_readAddress)
+				if (this_task == task_t::task_halt ) {
+					report_writer.close();
+					return;
+				} else if (this_task == task_t::task_readAddress)
 					clock_count += this->readCache(this->top_cache_ptr.get(), this_value);
 				else if (this_task == task_t::task_writeAddress)
 					clock_count += this->writeCache(this->top_cache_ptr.get(), this_value);
@@ -399,7 +391,7 @@ public:
 				else if (this_task == task_t::task_reportImage)
 					this->getCacheAtPtr(this_value)->printCacheImage(this_arrive_time);
 				current_task_ptr++;
-			}
+			} else clock_count++;
 		}
 	}
 

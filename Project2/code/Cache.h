@@ -5,26 +5,24 @@
 
 class Cache {
 private:
-	//#0:Pointer of Cache one Unit closer to User, nullptr if is top cache
-	Cache *child_cache_ptr{nullptr};
 
-	//#1:Pointer of Cache one Unit closer to Memory, nullptr if is bottom cache
+	//#0:Pointer of Cache one Unit closer to Memory, nullptr if is bottom cache
 	std::unique_ptr<Cache> parent_cache_ptr{nullptr};
 
-	/* #2 Information of the Partition of Address for this Specific Cache
+	/* #1 Information of the Partition of Address for this Specific Cache
 	 *
 	 * [Number of Tag Bits][Number Of Index Bits][Number Of Offset Bits]
 	 *
 	 */
 	std::tuple<size_t, size_t, size_t> address_partition{0, 0, 0};
 
-	/* #3 Information of the Dimensions for this Specific Cache
+	/* #2 Information of the Dimensions for this Specific Cache
 	 *
 	 * [Block Size(in Bytes)][Set Associtivity][Number Of Blocks]
 	 */
 	std::tuple<uint32_t, uint32_t, uint32_t> dimensions{0, 0, 0};
 
-	/* #4 2D Vector cache array containing DataBlock
+	/* #3 2D Vector cache array containing DataBlock
 	 *
 	 * To access individual element from cache array, do the following:
 	 * this->cache_array.at(A).at(B).getValid() access Cache[A][B].Valid - bool type is returned
@@ -41,17 +39,14 @@ private:
 	 */
 	std::pair<uint64_t, uint64_t> hit_miss_count{0, 0};
 
-	//#5: Number of Clock Cycles to Complete Read for this Cache
+	//#4: Number of Clock Cycles to Complete Read for this Cache
 	uint64_t latency{0};//#5
 
-	//#6 Number of Clock Cycles to Access Values from Memeory
-	uint64_t memory_latency{0};//#6
-
-	//#7 Layer ID of this Specific Cache with the lowest being 1
-	size_t cache_id{0};//#7
+	//#5 Layer ID of this Specific Cache with the lowest being 1
+	size_t cache_id{0};//#6
 
 	//Status of Initialization. All Members MUST be true before Cache Initialization
-	std::array<bool, 8> ready{false, false, false, false, false, false, false, false};
+	std::array<bool, 6> ready{false, false, false, false, false, false};
 
 	/**
  * Decode a 32-bit Address to 3-fields Index-based Tuple indicating where the Data could be
@@ -103,6 +98,7 @@ public:
 			if (this_dataBlock.compareTag(std::get<0>(this_index_tuple))) {
 				this_dataBlock.markDirty(_dirty);
 				hit_miss_count.first++;
+
 				return true;
 			}
 		}
@@ -141,20 +137,9 @@ public:
 		return this->parent_cache_ptr.get();
 	}
 
-	/**
-	 * Set Child Cache
-	 * Mark Child Cache has been set in Ready
-	 * Warning: Receiving nullptr means Cache is Top Cache
-	 * @param _child_ptr Pointer of Child Cache
-	 */
-	void setChild(Cache *_child_ptr) {
-		this->child_cache_ptr = _child_ptr;
-		this->ready.at(0) = true;
-	}
-
 	void makeAsTopCache() {
 		this->parent_cache_ptr = nullptr;
-		this->ready.at(1) = true;
+		this->ready.at(0) = true;
 	}
 
 	/**
@@ -163,16 +148,7 @@ public:
  */
 	void makeParent() {
 		this->parent_cache_ptr = std::make_unique<Cache>();
-		this->parent_cache_ptr->setChild(this);
-		this->ready.at(0) = true;
-	}
-
-	/**
-	 * Retrieve the Pointer of Child Cache
-	 * @return Pointer of Child Cache
-	 */
-	[[nodiscard]] Cache *getChildPtr() const {
-		return this->child_cache_ptr;
+		this->parent_cache_ptr->ready.at(0) = true;
 	}
 
 	/**
@@ -188,12 +164,12 @@ public:
 		std::get<0>(this->dimensions) = _block_size;//Number of bytes each data-block can hold
 		std::get<1>(this->dimensions) = _set_assoc;//Number of data-blocks does one index maps to
 		std::get<2>(this->dimensions) = num_of_cache_block;//Number of cache-blocks does cache-array have
-		this->ready.at(3) = true;
+		this->ready.at(2) = true;
 		std::get<2>(this->address_partition) = lround(log2l(_block_size));//Bits of Offset
 		std::get<1>(this->address_partition) = lround(log2l(num_of_cache_block));//Bits of Index
 		std::get<0>(this->address_partition) =
 				32 - std::get<2>(this->address_partition) - std::get<1>(this->address_partition);//Bits of Tag
-		this->ready.at(2) = true;
+		this->ready.at(1) = true;
 	}
 
 	/**
@@ -203,7 +179,7 @@ public:
 	 */
 	void setLatency(const uint64_t &_latency) {
 		this->latency = _latency;
-		this->ready.at(5) = true;
+		this->ready.at(4) = true;
 	}
 
 	/**
@@ -221,31 +197,20 @@ public:
 	 */
 	void setId(const size_t &_cache_id) {
 		this->cache_id = _cache_id;
-		this->ready.at(7) = true;
+		this->ready.at(5) = true;
 	}
-
-	/**
-	 * Set the MEMORY latency (should be the same across all cache layers)
-	 * Mark Memory Latency has been Set in Ready
-	 * @param _latency Number of Clock Cycles needed to Request Data from Memory
-	 */
-	void setMemoryLatency(const uint32_t &_latency) {
-		this->memory_latency = _latency;
-		this->ready.at(6) = true;
-	}
-
 
 	/**
 	 * Perform Ready Check to See if Requisites are Met for Cache Array Initialization
 	 * Initialize Cache Array to Correct Dimensions with Invalid Non-Dirty Zero-Tagged DataBlock
 	 */
 	void initCacheArray() {
-		if (!this->ready.at(3))
+		if (!this->ready.at(2))
 			throw std::invalid_argument("ERR inc called before scd");
 		DataBlock empty_data_block{std::get<0>(this->dimensions)};
 		std::vector<DataBlock> empty_cache_block{std::get<1>(this->dimensions), empty_data_block};
 		this->cache_array.resize(std::get<2>(this->dimensions), empty_cache_block);
-		this->ready.at(4) = true;
+		this->ready.at(3) = true;
 	}
 
 
