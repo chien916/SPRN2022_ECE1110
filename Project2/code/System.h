@@ -78,14 +78,14 @@ private:
 		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
 			elapsed_clock += this->memory_latency;//Tag is pseudo found and add memory latency to elapsed clock
 		} else {//If this is called by digging into Next Parental Cache (one level below)
-			if (_cache->findTag(_address)) {//if there's a tag match from a set -- READ HIT
+			if (_cache->updateExistingTag(_address, false)) {//if there's a tag match from a set -- READ HIT
 				elapsed_clock += _cache->getLatency();//takes this cache's latency to read
 			} else {//if there's NO tag match from a set -- READ MISS
 				elapsed_clock += this->readCache(_cache->getParentPtr(), _address);//sum latencies of parents to read
-				while (!_cache->allocateTag(_address, clock_count + elapsed_clock)) {//while allocation failed (full)
-					auto poped_db = _cache->popFlushLeastUsedTag(_address);//pop LRU tag and flush LRU field
+				while (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//while allocation failed (full)
+					auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
 					if (poped_db.first) //if the poped LRU tag is dirty, sync the address with parental cache (write)
-						elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write  parent cache
+						elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write parent cache
 				}
 			}
 		}
@@ -98,52 +98,26 @@ private:
 			elapsed_clock += this->memory_latency;//Tag is pseudo written and add memory latency to elapsed clock
 		} else {//If this is called by digging into Next Parental Cache (one level below)
 			if (read_write_policy == POLICY_WBWA) {//if the policy is write-back and write-allocate
-
-			} else if (read_write_policy == POLICY_WTNWA) {//if the policy is write-thru and non-write allocate
-
-			}
-		}
-
-	}
-
-
-	uint64_t reqReadAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
-		uint64_t elapsed_block{0};//elpased clock cycles
-		Cache *this_cache_ptr = top_cache_ptr.get();//start from top (childest) cache
-		{
-
-			if (hitOrMiss == C_HIT) {//If Hits any Set from this Cache, Add Latency of this Cache
-				elapsed_block += this_cache_ptr->getLatency();
-			} else {//If Misses, Find Value from Parent Cache, and Write to this Cache
-				Cache *digged_cache_ptr = this_cache_ptr->getParentPtr();
-				if (digged_cache_ptr == nullptr)
-					elapsed_block += this->memory_latency;
-				else {
-
+				if (_cache->updateExistingTag(_address, true)) {//if there's a tag match, then set dirty -- WRITE HIT
+					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
+				} else {//if there's NO tag match from a set to set dirty-- WRITE MISS
+					//TO-DO HERE: Should there be a read from parent cache?
+					while (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//while allocation failed
+						auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
+						if (poped_db.first) //if the poped LRU tag is dirty, write the address with parental cache
+							elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write parent
+					}
 				}
-
+			} else if (read_write_policy == POLICY_WTNWA) {//if the policy is write-thru and non-write allocate
+				if (_cache->updateExistingTag(_address, false)) {//if there's a tag match, no need dirty-- WRITE HIT
+					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
+				} else {//if there's NO tag match from a set - WRITE MISS
+					elapsed_clock += this->writeCache(_cache->getParentPtr(), _address);//just write in parent. Simple
+				}
 			}
 		}
-
-
-		return 0;
+		return elapsed_clock;
 	}
-
-	uint64_t reqWrtAdr(const uint32_t &_address, const uint64_t &_arrive_time) {
-		//To-Do
-		return 0;
-	}
-
-	uint64_t reqRptHmr(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
-		this->getCacheAtPtr(_cache_level)->printHitMissRate(_arrive_time);
-		return 0;
-	}
-
-	uint64_t reqRepImg(const uint32_t &_cache_level, const uint64_t &_arrive_time) {
-		this->getCacheAtPtr(_cache_level)->printCacheImage(_arrive_time);
-		return 0;
-	}
-
 
 public:
 
@@ -417,17 +391,15 @@ public:
 				uint32_t this_arrive_time = current_task_ptr->getArriveTime();
 				uint64_t add_clk{0};
 				if (this_task == task_t::task_readAddress)
-					add_clk = this->reqReadAdr(this_value, this_arrive_time);
+					clock_count += this->readCache(this->top_cache_ptr.get(), this_value);
 				else if (this_task == task_t::task_writeAddress)
-					add_clk = this->reqWrtAdr(this_value, this_arrive_time);
+					clock_count += this->writeCache(this->top_cache_ptr.get(), this_value);
 				else if (this_task == task_t::task_reportHitMiss)
-					add_clk = this->reqRptHmr(this_value, this_arrive_time);
+					this->getCacheAtPtr(this_value)->printHitMissRate(this_arrive_time);
 				else if (this_task == task_t::task_reportImage)
-					add_clk = this->reqRepImg(this_value, this_arrive_time);
+					this->getCacheAtPtr(this_value)->printCacheImage(this_arrive_time);
 				current_task_ptr++;
-				clock_count += add_clk;
 			}
-			clock_count += 1;
 		}
 	}
 

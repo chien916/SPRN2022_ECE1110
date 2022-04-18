@@ -90,16 +90,18 @@ public:
 		return if_no_false_found;
 	}
 
-/*
-	std::vector<DataBlock> *locateCacheBlock(const std::tuple<uint32_t, uint32_t, uint32_t> &_address_tuple) {
-		std::vector<DataBlock> *to_return = &(this->cache_array.at(std::get<1>(_address_tuple)));
-		return to_return;
-	}*/
 
-	bool findTag(const uint32_t &_address) {
+	/**
+	 * Find if there's a tag matching the address.
+	 * @param _address Raw 32-bit address
+	 * @param _dirty If dirty bit should been set
+	 * @return True if found and update, false otherwise
+	 */
+	bool updateExistingTag(const uint32_t &_address, const bool &_dirty) {
 		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
-		for (const DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
+		for (DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
 			if (this_dataBlock.compareTag(std::get<0>(this_index_tuple))) {
+				this_dataBlock.markDirty(_dirty);
 				hit_miss_count.first++;
 				return true;
 			}
@@ -108,7 +110,7 @@ public:
 		return false;
 	}
 
-	[[nodiscard]] std::pair<bool, uint32_t> popFlushLeastUsedTag(const uint32_t &_address) {
+	[[nodiscard]] std::pair<bool, uint32_t> popFlushLRUTag(const uint32_t &_address) {
 		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
 		DataBlock *least_used_db = &(cache_array.at(std::get<1>(this_index_tuple)).at(0));
 		for (DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
@@ -120,7 +122,7 @@ public:
 		return dirty_and_address;
 	}
 
-	bool allocateTag(const uint32_t &_address, const uint64_t &_clock_time) {
+	bool allocateNewTag(const uint32_t &_address, const uint64_t &_clock_time) {
 		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
 		for (DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
 			if (!this_dataBlock.getValid()) {
@@ -130,7 +132,6 @@ public:
 		}
 		return false;
 	}
-
 
 	/**
 	 * Retrieve the Pointer of Parent Cache
@@ -246,44 +247,6 @@ public:
 		this->cache_array.resize(std::get<2>(this->dimensions), empty_cache_block);
 		this->ready.at(4) = true;
 	}
-
-//	/**
-//	 * Attempt to Read Data from a Raw 32-bit Address with Certain Policy
-//	 * @param _address_val Raw 32-bit Address (Memory Data)
-//	 * @param _policy True if WRITE-BACK, false if WRITE-THRU
-//	 * @return Number of Clock Cycles Consumed to Read the Data
-//	 */
-//	bool read(const uint32_t &_address_val, const bool &_policy) {
-//		if (!this->operator bool())
-//			throw std::runtime_error("ERR Cache Cannot Read - Cache Not Ready");
-//		std::tuple<uint32_t, uint32_t, uint32_t> indices = this->addressDecode(_address_val);
-//		for (const DataBlock &cb: cache_array.at(std::get<1>(indices))) {
-//			if (cb.compareTag(std::get<0>(indices))) {
-//				this->hit_miss_count.first++;
-//				return this->latency;//Hit
-//			} else {
-//				this->hit_miss_count.second++;
-//				if (this->parent_cache_ptr) {//Hit - Go to Parent Cache
-//					return this->latency + this->parent_cache_ptr->read(_address_val, _policy);//Miss
-//				} else {//Miss - Go to Memory
-//					return this->latency + this->memory_latency;
-//				}
-//			}
-//		}
-//		return false;
-//	}
-
-/*	*//**
-	 * Attempt to Write Data to a Raw 32-bit Address with Certain Policy
-	 * @param _address_val Raw 32-bit Address (Memory Data)
-	 * @param _policy True if WRITE-ALLOCATE, false if NON-WRITE-ALLOCATE
-	 * @return Number of Clock Cycles Consumed to Write the Data
-	 *//*
-	uint64_t write(const uint32_t &_address_val, const bool &_policy) {
-
-	}*/
-
-
 
 
 	/**
