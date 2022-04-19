@@ -1,0 +1,155 @@
+        -:    0:Source:D:/Academics/SP2022/Yang_1110/projects/Project2/code/Core.h
+        -:    0:Graph:D:\Academics\SP2022\Yang_1110\projects\Project2\code\cmake-build-debug-mingw-coverage\CMakeFiles\code.dir\main.cpp.gcno
+        -:    0:Data:D:\Academics\SP2022\Yang_1110\projects\Project2\code\cmake-build-debug-mingw-coverage\CMakeFiles\code.dir\main.cpp.gcda
+        -:    0:Runs:1
+        -:    1://
+        -:    2:// Created by Yinhao on 4/13/2022.
+        -:    3://
+        -:    4:
+        -:    5:#ifndef CODE_CORE_H
+        -:    6:#define CODE_CORE_H
+        -:    7:
+        -:    8:#include "Include.h"
+        -:    9:#include "System.h"
+        -:   10:
+        -:   11:class Core {
+        -:   12:	using ArgumentTuple_t = std::tuple<uint32_t, uint32_t, uint32_t>;
+        -:   13:	using SystemFunction_t = std::pair<bool (System::*)(ArgumentTuple_t *), size_t>;
+        -:   14:	System system;
+        -:   15:	std::tuple<uint32_t, uint32_t, uint32_t> current_arguments;
+        -:   16:	std::pair<std::ifstream, std::ofstream> file_manipulator;
+        -:   17:	uint64_t clock{0};
+        -:   18:	std::unordered_map<std::string, SystemFunction_t> instruction_map;
+        -:   19:
+        -:   20:	/**
+        -:   21:	 * Convert an String Argument to Integer 32-bit type
+        -:   22:	 * @param _char_to_check Character to be checked
+        -:   23:	 * @return True if is a Numeric Digit, false otherwise
+        -:   24:	 */
+        -:   25:	uint32_t argumentToInt(const std::string &_argument) {
+        -:   26:		bool dollarSignDetected = _argument.at(0) == '$';
+        -:   27:		bool allOtherIsDigit = std::all_of(_argument.begin() + 1, _argument.end(), ::isdigit);
+        -:   28:		if (!dollarSignDetected || !allOtherIsDigit)
+        -:   29:			throw std::runtime_error("ERR Instruction Argument Format Error");
+        -:   30:		return std::stoi(std::string(_argument.begin() + 1, _argument.end()), nullptr, 10);
+        -:   31:	}
+        -:   32:
+        -:   33:	/**w
+        -:   34:	 * Get the Next Instruction
+        -:   35:	 * Warning: This Function does NOT handle EOF
+        -:   36:	 * @return [INSTRUCTION_STRING][[ARGUMENT1][ARGUMENT2][ARGUMENT3]]
+        -:   37:	 */
+        -:   38:	std::pair<std::string, ArgumentTuple_t> getNextInstruction() {
+        -:   39:		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Initialized.");
+        -:   40:		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Initialized.");
+        -:   41:		std::string this_instruction_string, this_argument_string;
+        -:   42:		std::pair<std::string, ArgumentTuple_t> to_return{"", {0, 0, 0}};
+        -:   43:		do {
+        -:   44:			file_manipulator.first >> this_instruction_string;
+        -:   45:		} while (instruction_map.find(this_instruction_string) == instruction_map.end() &&
+        -:   46:				 file_manipulator.first.good());
+        -:   47:		to_return.first = this_instruction_string;
+        -:   48:		for (size_t i = 0; i < instruction_map.at(this_instruction_string).second; i = i + 1) {
+        -:   49:			file_manipulator.first >> this_argument_string;
+        -:   50:			if (i == 0) std::get<0>(to_return.second) = argumentToInt(this_argument_string);
+        -:   51:			else if (i == 1) std::get<1>(to_return.second) = argumentToInt(this_argument_string);
+        -:   52:			else if (i == 2) std::get<2>(to_return.second) = argumentToInt(this_argument_string);
+        -:   53:		}
+        -:   54:		return to_return;
+        -:   55:	}
+        -:   56:
+        -:   57:	/**
+        -:   58: * Load instructions from file, then invoke mapped function from System
+        -:   59: * Schedule all task-type instructions into task queue (unsorted)
+        -:   60: * Execute all configuration-type instructions immediately
+        -:   61: */
+        -:   62:	void loadInstructions() {
+        -:   63:		while (file_manipulator.first.good()) {
+        -:   64:			std::pair<std::string, ArgumentTuple_t> this_instruction = this->getNextInstruction();
+        -:   65:			SystemFunction_t this_system_function = instruction_map.at(this_instruction.first);
+        -:   66:			std::invoke(this_system_function.first, system, &this_instruction.second);
+        -:   67:		}
+        -:   68:	};
+        -:   69:
+        -:   70:	/**
+        -:   71:	 * Initialize Core and Run Instructions
+        -:   72:	 */
+        -:   73:	void initCore() {
+        -:   74:		if (!file_manipulator.first.is_open()) throw std::runtime_error("ERR Input File NOT Found.");
+        -:   75:		else if (!file_manipulator.second.is_open()) throw std::runtime_error("ERR Output File NOT Found.");
+        -:   76:		this->system.setWriterPtr(&this->file_manipulator.second);
+        -:   77:		instruction_map["con"] = {&System::setConfig, 3};
+        -:   78:		instruction_map["scd"] = {&System::setCacheDimension, 3};
+        -:   79:		instruction_map["scl"] = {&System::setCacheLatency, 2};
+        -:   80:		instruction_map["sml"] = {&System::setMemoryLatency, 1};
+        -:   81:		instruction_map["inc"] = {&System::initCache, 1};
+        -:   82:		instruction_map["tre"] = {&System::taskReadAddress, 2};
+        -:   83:		instruction_map["twr"] = {&System::taskWriteAddress, 2};
+        -:   84:		instruction_map["ins"] = {&System::initSystem, 0};
+        -:   85:		instruction_map["pcr"] = {&System::taskPrintCacheRate, 2};
+        -:   86:		instruction_map["pci"] = {&System::taskPrintCacheImage, 2};
+        -:   87:		instruction_map["hat"] = {&System::haltProgram, 0};
+        -:   88:		this->loadInstructions();
+        -:   89:	}
+        -:   90:
+        -:   91:public:
+        -:   92:
+        -:   93:	/**
+        -:   94:	 * Bind the File Reader and File Writer to Certain Files to Default
+        -:   95:	 */
+        -:   96:	explicit Core() {
+        -:   97:		this->file_manipulator.first.open("instructions.txt");
+        -:   98:		this->file_manipulator.second.open("log_tasks.csv");
+        -:   99:	}
+        -:  100:
+        -:  101:	/**
+        -:  102:	 * Bind the File Reader and File Writer to Certain Files to Given File
+        -:  103:	 * @param _instruction_filename Filename of Input Files (containing instructions)
+        -:  104:	 */
+function _ZN4CoreC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE called 1 returned 100% blocks executed 62%
+        1:  105:	explicit Core(const std::string &_instruction_filename) {
+        1:  105-block  0
+call    0 returned 1
+call    1 returned 1
+call    2 returned 1
+branch  3 taken 1 (fallthrough)
+branch  4 taken 0 (throw)
+        1:  105-block  1
+call    5 returned 1
+        1:  106:		this->file_manipulator.first.open(_instruction_filename);
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:  107:		this->file_manipulator.second.open("log_tasks.csv");
+        1:  107-block  0
+call    0 returned 1
+branch  1 taken 1 (fallthrough)
+branch  2 taken 0 (throw)
+        1:  108:	}
+        1:  108-block  0
+    $$$$$:  108-block  1
+call    0 never executed
+    $$$$$:  108-block  2
+call    1 never executed
+    $$$$$:  108-block  3
+call    2 never executed
+        -:  109:
+        -:  110:	/**
+        -:  111:	 * Destructor waits for I/O finishes before thread terminates
+        -:  112:	 */
+function _ZN4CoreD1Ev called 1 returned 100% blocks executed 100%
+        1:  113:	~Core() {
+        1:  114:		this->file_manipulator.first.close();
+        1:  114-block  0
+call    0 returned 1
+        1:  115:		this->file_manipulator.second.close();
+call    0 returned 1
+        1:  116:	}
+call    0 returned 1
+call    1 returned 1
+call    2 returned 1
+        -:  117:
+        -:  118:
+        -:  119:};
+        -:  120:
+        -:  121:#endif //CODE_CORE_H

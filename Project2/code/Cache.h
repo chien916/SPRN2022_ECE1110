@@ -201,6 +201,14 @@ public:
 	}
 
 	/**
+	 * Get the ID of this cache
+	 * @return the ID of this cache
+	 */
+	[[nodiscard]] size_t getId() const {
+		return this->cache_id;
+	}
+
+	/**
 	 * Perform Ready Check to See if Requisites are Met for Cache Array Initialization
 	 * Initialize Cache Array to Correct Dimensions with Invalid Non-Dirty Zero-Tagged DataBlock
 	 */

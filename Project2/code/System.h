@@ -36,7 +36,7 @@ private:
 	 * use (*global_writer_ptr).operator<<() to write
 	 * e.g. (*global_writer_ptr)<<("THINGS TO WRITE")<<std::endl;
 	 */
-	std::ofstream report_writer;
+	std::pair<std::ofstream, uint32_t> report_writer;
 
 	/* #6 Container holding tasks need to be done
 	 * Ready if Sorted.
@@ -119,6 +119,19 @@ private:
 		return elapsed_clock;
 	}
 
+	void reportStatus(const uint64_t &_time, Cache *_cache, const std::string &_oper, const uint32_t &_address,
+					  const std::string &_status) {
+		std::string cache = _cache == nullptr ? "MEM" : ("L" + std::to_string(_cache->getId()));
+		std::string front_dashes;
+		for (size_t i = 0; i < this->report_writer.second; i++) front_dashes += "--";
+		report_writer.first
+				<<front_dashes
+				<< cache << "::"
+				<< _oper << "("
+				<< _address << ")->"
+				<< _status << std::endl;
+	}
+
 public:
 
 	/**
@@ -167,7 +180,6 @@ public:
 		if (this_cache_ptr->operator bool())
 			throw std::invalid_argument("ERR con Called after inc");
 		this_cache_ptr->setId(1);
-		this_cache_ptr->setChild(nullptr);
 		if (cache_count == 1) this_cache_ptr->makeAsTopCache();
 		for (size_t i = 2; i <= _cache_count; i++) {
 			this_cache_ptr->makeParent();
@@ -175,7 +187,7 @@ public:
 			this_cache_ptr->setId(i);
 		}
 		this->ready.at(3) = true;
-		this->report_writer.open("log_system.csv");
+		this->report_writer.first.open("log_system.csv");
 		this->ready.at(5) = true;
 		return true;
 	}
@@ -264,7 +276,6 @@ public:
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
-		this_cache_ptr->setMemoryLatency(this->memory_latency);
 		this_cache_ptr->initCacheArray();
 		return true;
 	}
@@ -379,8 +390,8 @@ public:
 				task_t this_task = current_task_ptr->getTaskType();
 				uint32_t this_value = current_task_ptr->getTaskValue();
 				uint32_t this_arrive_time = current_task_ptr->getArriveTime();
-				if (this_task == task_t::task_halt ) {
-					report_writer.close();
+				if (this_task == task_t::task_halt) {
+					report_writer.first.close();
 					return;
 				} else if (this_task == task_t::task_readAddress)
 					clock_count += this->readCache(this->top_cache_ptr.get(), this_value);
