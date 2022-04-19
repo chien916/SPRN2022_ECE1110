@@ -35,7 +35,7 @@ class Core {
 	 * @return [INSTRUCTION_STRING][[ARGUMENT1][ARGUMENT2][ARGUMENT3]]
 	 */
 	std::pair<std::string, ArgumentTuple_t> getNextInstruction() {
-		if (instruction_reader.is_open()) throw std::runtime_error("ERR Input File NOT Initialized.");
+		if (!instruction_reader.is_open()) throw std::runtime_error("ERR Input File NOT Initialized.");
 		std::string this_instruction_string, this_argument_string;
 		std::pair<std::string, ArgumentTuple_t> to_return{"", {0, 0, 0}};
 		do {

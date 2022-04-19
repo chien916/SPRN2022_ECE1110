@@ -73,87 +73,135 @@ private:
 		this->ready.at(6) = true;
 	}
 
-	[[nodiscard]] uint64_t readCache(Cache *_cache, const uint32_t &_address) {
-		uint64_t elapsed_clock{0};//elapsed clock cycles default is 0
+	[[nodiscard]] uint64_t readCache(Cache *_cache, const uint32_t &_address, const uint64_t &_clock_when_called) {
+		reportCall(_clock_when_called, _cache, "READ", _address);
+		std::string status{""};
+		uint64_t elapsed_clock{_clock_when_called};//elapsed clock cycles default is 0
 		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
-			elapsed_clock += this->memory_latency;//Tag is pseudo found and add memory latency to elapsed clock
+			elapsed_clock += memory_latency;//Tag is pseudo found and add memory latency to elapsed clock
+			status = "M_R_SUCCESS";
 		} else {//If this is called by digging into Next Parental Cache (one level below)
 			if (_cache->updateExistingTag(_address, false)) {//if there's a tag match from a set -- READ HIT
 				elapsed_clock += _cache->getLatency();//takes this cache's latency to read
+				status = "C_R_HIT";
 			} else {//if there's NO tag match from a set -- READ MISS
-				elapsed_clock += this->readCache(_cache->getParentPtr(), _address);//sum latencies of parents to read
-				while (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//while allocation failed (full)
+				elapsed_clock = readCache(_cache->getParentPtr(), _address,
+										  elapsed_clock);//sum latencies of parents to read
+				if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//if allocation failed (full)
 					auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
-					if (poped_db.first) //if the poped LRU tag is dirty, sync the address with parental cache (write)
-						elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write parent cache
+					if (poped_db.first) {//if the poped LRU tag is dirty, sync the address with parental cache (write)
+						elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//Write prt
+						status = "C_R_MISS$ALLOC_FAILED$POPED_DIRTY";
+					} else {//if the popped LRU tag is non-dirty, discard the poped tag
+						status = "C_R_MISS$ALLOC_FAILED$POPED_CLEAN";
+					}
+					if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock))//try to alloc again after pop
+						throw std::runtime_error("ERR Alloc after Popping failed");
+				} else {//if allocation suceeded without popping
+					status = "C_R_MISS$ALLOC_SUCCESS";
 				}
 			}
 		}
+		reportReturn(elapsed_clock, _cache, "READ", _address, status);
 		return elapsed_clock;
 	}
 
-	[[nodiscard]] uint64_t writeCache(Cache *_cache, const uint32_t &_address) {
-		uint64_t elapsed_clock{0};//elapsed clock cycles default is 0
+	[[nodiscard]] uint64_t writeCache(Cache *_cache, const uint32_t &_address, const uint64_t &_clock_when_called) {
+		reportCall(_clock_when_called, _cache, "WRITE", _address);
+		std::string status{""};
+		uint64_t elapsed_clock{_clock_when_called};//elapsed clock cycles default is 0
 		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
-			elapsed_clock += this->memory_latency;//Tag is pseudo written and add memory latency to elapsed clock
+			elapsed_clock += memory_latency;//Tag is pseudo written and add memory latency to elapsed clock
+			status = "M_W_SUCCESS";
 		} else {//If this is called by digging into Next Parental Cache (one level below)
 			if (read_write_policy == POLICY_WBWA) {//if the policy is write-back and write-allocate
 				if (_cache->updateExistingTag(_address, true)) {//if there's a tag match, then set dirty -- WRITE HIT
 					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
+					status = "C_R_HIT$MARKED_DIRTY$WB";
 				} else {//if there's NO tag match from a set to set dirty-- WRITE MISS
-					//TO-DO HERE: Should there be a read from parent cache?
-					while (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//while allocation failed
+//TO-DO HERE: Should there be a read from parent cache?
+					if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//while allocation failed
 						auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
-						if (poped_db.first) //if the poped LRU tag is dirty, write the address with parental cache
-							elapsed_clock += this->writeCache(_cache->getParentPtr(), poped_db.second);//Write parent
+						if (poped_db.first) {//if the poped LRU tag is dirty, write the address with parental cache
+							elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//W Prt
+							status = "C_W_MISS$ALLOC_FAILED$POP_DIRTY$WB";
+						} else {
+							status = "C_W_MISS$ALLOC_FAILED$POP_CLEAN$WB";
+						}
+						if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock))//try to alloc agn after pop
+							throw std::runtime_error("ERR Alloc after Popping failed");
+					} else {
+						status = "C_W_MISS$ALLOC_SUCCESS$WB";
 					}
 				}
 			} else if (read_write_policy == POLICY_WTNWA) {//if the policy is write-thru and non-write allocate
 				if (_cache->updateExistingTag(_address, false)) {//if there's a tag match, no need dirty-- WRITE HIT
 					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
+					status = "C_W_HIT$WT";
 				} else {//if there's NO tag match from a set - WRITE MISS
-					elapsed_clock += this->writeCache(_cache->getParentPtr(), _address);//just write in parent. Simple
+					elapsed_clock = writeCache(_cache->getParentPtr(), _address, elapsed_clock);//just write in parent.
+					status = "C_W_MISS$PROPAGATE$WT";
 				}
 			}
 		}
+		reportReturn(elapsed_clock, _cache, "WRITE", _address, status);
 		return elapsed_clock;
 	}
 
-	void reportStatus(const uint64_t &_time, Cache *_cache, const std::string &_oper, const uint32_t &_address,
+	void reportReturn(const uint64_t &_time, Cache *_cache, const std::string &_oper, const uint32_t &_address,
 					  const std::string &_status) {
 		std::string cache = _cache == nullptr ? "MEM" : ("L" + std::to_string(_cache->getId()));
 		std::string front_dashes;
-		for (size_t i = 0; i < this->report_writer.second; i++) front_dashes += "--";
+		for (size_t i = 0; i < this->report_writer.second; i++) front_dashes += "\t";
 		report_writer.first
-				<<front_dashes
+				<< front_dashes
+				<< "} <--"
+/*				<< cache << "::"
+				<< _oper << "("
+				<< _address << ")->"*/
+				<< _status << std::endl;
+		if (report_writer.second == 0)
+			throw std::runtime_error("ERR Tab Count Less than 0");
+		report_writer.second--;
+	}
+
+	void reportCall(const uint64_t &_time, Cache *_cache, const std::string &_oper, const uint32_t &_address) {
+		std::string cache = _cache == nullptr ? "MEM" : ("L" + std::to_string(_cache->getId()));
+		std::string front_dashes;
+		for (size_t i = 0; i < this->report_writer.second; i++) front_dashes += "\t";
+		report_writer.first
+				<< front_dashes
+				<< _time << "->"
 				<< cache << "::"
 				<< _oper << "("
-				<< _address << ")->"
-				<< _status << std::endl;
+				<< _address << "){"
+				<< std::endl;
+		report_writer.second++;
 	}
+
 
 public:
 
-	/**
-	 * Check if ALL Data Members Are Initialized
-	 * @return True if All Initialized, false if At Least One Member if NOT Initialized
-	 */
+/**
+ * Check if ALL Data Members Are Initialized
+ * @return True if All Initialized, false if At Least One Member if NOT Initialized
+ */
 	explicit operator bool() {
 		bool if_no_false_found = std::find(this->ready.begin(), this->ready.end(), false) == this->ready.end();
 		return if_no_false_found;
 	}
 
-	/**
-	 * con	[cache_count]	[block_size]	[policy_num]	-
-	 * Set Configurations
-	 * Perform Format Check for Policy Number
-	 * Mark Cache Count, Block Size, Policy Number as Ready
-	 * Warning: Policy number MUST be EITHER 1 OR 2
-	 * @param _cache_count Number of Cache Layers in this System
-	 * @param _block_size Number of Bytes that Each DataBlock can hold
-	 * @param _policy_num Policy Number this System should Implement
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * con	[cache_count]	[block_size]	[policy_num]	-
+ * Set Configurations
+ * Perform Format Check for Policy Number
+ * Mark Cache Count, Block Size, Policy Number as Ready
+ * Warning: Policy number MUST be EITHER 1 OR 2
+ * @param _cache_count Number of Cache Layers in this System
+ * @param _block_size Number of Bytes that Each DataBlock can hold
+ * @param _policy_num Policy Number this System should Implement
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool setConfig(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -187,21 +235,21 @@ public:
 			this_cache_ptr->setId(i);
 		}
 		this->ready.at(3) = true;
-		this->report_writer.first.open("log_system.csv");
+		this->report_writer.first.open("log_system.txt");
 		this->ready.at(5) = true;
 		return true;
 	}
 
-	/**
-	 * scd	[cache_number]	[total_size]	[set_assoc]		-
-	 * Set Cache Size and Set Assoc
-	 * Perform Bound Checks for Cache Level
-	 * Warning: Function will Mark Ready in Cache, not System
-	 * @param _cache_level The level(index) of cache with lowest being 1
-	 * @param _total_size Total Number of Bytes this Cache needs to Store
-	 * @param _set_assoc Number of DataBlock for a Each Given Index
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * scd	[cache_number]	[total_size]	[set_assoc]		-
+ * Set Cache Size and Set Assoc
+ * Perform Bound Checks for Cache Level
+ * Warning: Function will Mark Ready in Cache, not System
+ * @param _cache_level The level(index) of cache with lowest being 1
+ * @param _total_size Total Number of Bytes this Cache needs to Store
+ * @param _set_assoc Number of DataBlock for a Each Given Index
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool setCacheDimension(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -220,15 +268,15 @@ public:
 	}
 
 
-	/**
-	 * scl	[cache_number]	[latency]						-
-	 * Set Cache Latency
-	 * Perform Bound Checks for Cache Level
-	 * Warning: Function will Mark Ready in Cache, not System
-	 * @param _cache_level The level(index) of cache with lowest being 1
-	 * @param _latency Number of Clock Cycles to Complete Read for this Cache
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * scl	[cache_number]	[latency]						-
+ * Set Cache Latency
+ * Perform Bound Checks for Cache Level
+ * Warning: Function will Mark Ready in Cache, not System
+ * @param _cache_level The level(index) of cache with lowest being 1
+ * @param _latency Number of Clock Cycles to Complete Read for this Cache
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool setCacheLatency(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -242,14 +290,14 @@ public:
 		return true;
 	}
 
-	/**
-	 * sml	[latency]										-
-	 * Set Memory Latency
-	 * Mark Memory Latency as Ready
-	 * Warning: This Function does NOT Set Memory Latency in Cache Array
-	 * @param _latency
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * sml	[latency]										-
+ * Set Memory Latency
+ * Mark Memory Latency as Ready
+ * Warning: This Function does NOT Set Memory Latency in Cache Array
+ * @param _latency
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool setMemoryLatency(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -261,18 +309,18 @@ public:
 		return true;
 	}
 
-	/**
-	 * inc	[cache_number]									-
-	 * Initialize Cache
-	 * Perform Bound Checks for Cache Level
-	 * @param _cache_level The level(index) of cache with lowest being 1
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * inc	[cache_number]									-
+ * Initialize Cache
+ * Perform Bound Checks for Cache Level
+ * @param _cache_level The level(index) of cache with lowest being 1
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool initCache(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
-		if (!this->ready.at(4))
-			throw std::invalid_argument("ERR inc called before sml");
+/*		if (!this->ready.at(4))
+			throw std::invalid_argument("ERR inc called before sml");*/
 		uint32_t _cache_level = std::get<0>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
@@ -280,13 +328,13 @@ public:
 		return true;
 	}
 
-	/**
-	 * tre	[address]		[arr_time]						-
-	 * Task Read Address at Time
-	 * @param _address Raw 32-bit Address to be Read
-	 * @param _arrive_time	Clock Cycle at when This Specific Task is Scheduled
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * tre	[address]		[arr_time]						-
+ * Task Read Address at Time
+ * @param _address Raw 32-bit Address to be Read
+ * @param _arrive_time	Clock Cycle at when This Specific Task is Scheduled
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool taskReadAddress(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -298,13 +346,13 @@ public:
 		return true;
 	}
 
-	/**
-	 * twr	[address]		[arr_time]						-
-	 * Task Write Address at Time
-	 * @param _address Raw 32-bit Address to be Written
-	 * @param _arrive_time Clock Cycle at when This Specific Task is Scheduled
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * twr	[address]		[arr_time]						-
+ * Task Write Address at Time
+ * @param _address Raw 32-bit Address to be Written
+ * @param _arrive_time Clock Cycle at when This Specific Task is Scheduled
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool taskWriteAddress(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -316,11 +364,11 @@ public:
 		return true;
 	}
 
-	/**
-	 * ins													-
-	 * Initialize System
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * ins													-
+ * Initialize System
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool initSystem(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -332,13 +380,13 @@ public:
 		return true;
 	}
 
-	/**
-	 * pcr [cache_number]									-
-	 * Print Cache Hit/Miss Rate
-	 * Perform Bound Checks for Cache Level
-	 * @param _cache_level The level(index) of cache with lowest being 1
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * pcr [cache_number]									-
+ * Print Cache Hit/Miss Rate
+ * Perform Bound Checks for Cache Level
+ * @param _cache_level The level(index) of cache with lowest being 1
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool taskPrintCacheRate(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -351,13 +399,13 @@ public:
 		return true;
 	}
 
-	/**
-	 * pci	[cache_number]									-
-	 * Print Cache Image
-	 * Perform Bound Checks for Cache Level
-	 * @param _cache_level The level(index) of cache with lowest being 1
-	 * @return True if Instruction Ran without Errors, false otherwise
-	 */
+/**
+ * pci	[cache_number]									-
+ * Print Cache Image
+ * Perform Bound Checks for Cache Level
+ * @param _cache_level The level(index) of cache with lowest being 1
+ * @return True if Instruction Ran without Errors, false otherwise
+ */
 	bool taskPrintCacheImage(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -370,11 +418,11 @@ public:
 		return true;
 	}
 
-	/**
-	 * hat
-	 * Stop Fetching Instruction
-	 * @return ALWAYS TRUE
-	 */
+/**
+ * hat
+ * Stop Fetching Instruction
+ * @return ALWAYS TRUE
+ */
 	bool haltProgram(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
@@ -394,9 +442,9 @@ public:
 					report_writer.first.close();
 					return;
 				} else if (this_task == task_t::task_readAddress)
-					clock_count += this->readCache(this->top_cache_ptr.get(), this_value);
+					clock_count = this->readCache(this->top_cache_ptr.get(), this_value, clock_count);
 				else if (this_task == task_t::task_writeAddress)
-					clock_count += this->writeCache(this->top_cache_ptr.get(), this_value);
+					clock_count = this->writeCache(this->top_cache_ptr.get(), this_value, clock_count);
 				else if (this_task == task_t::task_reportHitMiss)
 					this->getCacheAtPtr(this_value)->printHitMissRate(this_arrive_time);
 				else if (this_task == task_t::task_reportImage)
