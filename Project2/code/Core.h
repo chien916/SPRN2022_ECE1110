@@ -90,6 +90,7 @@ public:
 	 */
 	explicit Core() {
 		this->instruction_reader.open("instructions.txt");
+		this->initCore();
 	}
 
 	/**
@@ -98,6 +99,7 @@ public:
 	 */
 	explicit Core(const std::string &_instruction_filename) {
 		this->instruction_reader.open(_instruction_filename);
+		this->initCore();
 	}
 
 	/**
