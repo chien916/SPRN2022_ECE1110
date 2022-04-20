@@ -30,10 +30,10 @@ public:
 		}
 		else if ((my_t == task_t::task_readAddress || my_t == task_t::task_writeAddress) &&
 			(his_t == task_t::task_reportImage || his_t == task_t::task_reportHitMiss)) {
-			return true;
+			return false;
 		} else if ((his_t == task_t::task_readAddress || his_t == task_t::task_writeAddress) &&
 				   (my_t == task_t::task_reportImage || my_t == task_t::task_reportHitMiss)) {
-			return false;
+			return true;
 		}else
 			return false;
 	}

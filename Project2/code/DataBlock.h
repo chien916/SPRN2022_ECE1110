@@ -66,7 +66,7 @@ public:
 	 * @param _tag Tag value to be compared to
 	 * @return True if tag matches; False otherwise
 	 */
-	bool compareTag(const uint32_t &_tag) const {
+	[[nodiscard]] bool compareTag(const uint32_t &_tag) const {
 		return (this->tag == _tag && this->valid);
 	}
 
@@ -74,7 +74,7 @@ public:
 	 * Mark this DataBlock Dirty
 	 * Meaning this DataBlock needs to sync with parents
 	 */
-	void markDirty(const uint64_t &_clock_time,const bool& _ifDirty) {
+	void markDirty(const uint64_t &_clock_time, const bool &_ifDirty) {
 		this->last_use = _clock_time;
 		this->dirty = _ifDirty;
 	}
@@ -83,7 +83,7 @@ public:
 	 * Test if this Datablock needs to sync with parents (For Printing Purpose)
 	 * @return True if dirty, false otherwise
 	 */
-	bool getDirty() const {
+	[[nodiscard]] bool getDirty() const {
 		return this->dirty;
 	}
 
@@ -91,7 +91,7 @@ public:
 	 * Test if this Datablock has been used at least once (For Printing Purpose)
 	 * @return True if valid, false otherwise
 	 */
-	bool getValid() const {
+	[[nodiscard]] bool getValid() const {
 		return this->valid;
 	}
 
@@ -99,8 +99,12 @@ public:
 	 * Retrieve the tag of this DataBlock (For Printing Purpose)
 	 * @return Tag retrieved
 	 */
-	uint32_t getTag() const {
+	[[nodiscard]] uint32_t getTag() const {
 		return this->tag;
+	}
+
+	[[nodiscard]] uint64_t getLastUse() const {
+		return this->last_use;
 	}
 
 };

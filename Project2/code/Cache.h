@@ -260,7 +260,8 @@ public:
 		for (size_t col = 0; col < std::get<1>(this->dimensions); col++)
 			image_writer << ",VALID[" + std::to_string(col) + "]" +
 							",DIRTY[" + std::to_string(col) + "]" +
-							",TAG[" + std::to_string(col) + "]";
+							",TAG[" + std::to_string(col) + "]" +
+							",LRU[" + std::to_string(col) + "]";
 		image_writer << std::endl;
 		//Print Contents
 		for (size_t row = 0; row < std::get<2>(this->dimensions); row++) {
@@ -269,7 +270,8 @@ public:
 				const DataBlock &this_db = this->cache_array.at(row).at(col);
 				image_writer << "," + std::to_string(this_db.getValid()) +
 								"," + std::to_string(this_db.getDirty()) +
-								"," + std::bitset<32>(this_db.getTag()).to_string();
+								"," + std::bitset<32>(this_db.getTag()).to_string() +
+								"," + std::to_string(this_db.getLastUse());
 			}
 			image_writer << std::endl;
 		}
