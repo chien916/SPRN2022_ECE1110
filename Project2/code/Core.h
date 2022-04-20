@@ -57,10 +57,21 @@ class Core {
  * Execute all configuration-type instructions immediately
  */
 	void loadInstructions() {
+
 		while (instruction_reader.good()) {
-			std::pair<std::string, ArgumentTuple_t> this_instruction = this->getNextInstruction();
-			SystemFunction_t this_system_function = instruction_map.at(this_instruction.first);
-			std::invoke(this_system_function.first, system, &this_instruction.second);
+			std::pair<std::string, ArgumentTuple_t> this_instruction;
+			SystemFunction_t this_system_function;
+			try {
+				this_instruction = this->getNextInstruction();
+				if (this_instruction.first == "hat") {
+					return;
+				}
+				this_system_function = instruction_map.at(this_instruction.first);
+				std::invoke(this_system_function.first, system, &this_instruction.second);
+			} catch (std::exception &_exep) {
+				std::cout << "Warning: Unidentified Instruction" << this_instruction.first;
+			}
+
 		}
 	};
 
@@ -79,7 +90,7 @@ class Core {
 		instruction_map["ins"] = {&System::initSystem, 0};
 		instruction_map["pcr"] = {&System::taskPrintCacheRate, 2};
 		instruction_map["pci"] = {&System::taskPrintCacheImage, 2};
-		instruction_map["hat"] = {&System::haltProgram, 0};
+/*		instruction_map["hat"] = {&System::haltProgram, 1};*/
 		this->loadInstructions();
 	}
 

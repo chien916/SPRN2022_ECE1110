@@ -48,24 +48,6 @@ private:
 	//Status of Initialization. All Members MUST be true before Cache Initialization
 	std::array<bool, 6> ready{false, false, false, false, false, false};
 
-	/**
- * Decode a 32-bit Address to 3-fields Index-based Tuple indicating where the Data could be
- * Warning: This function should ONLY be used inside this Cache Class
- * @param address_val Raw 32-bit address
- * @return [Tag Value][Index of Index][Index of Offset]
- */
-	[[nodiscard]] std::tuple<uint32_t, uint32_t, uint32_t> addressDecode(const uint32_t &address_val) const {
-		std::tuple<uint32_t, uint32_t, uint32_t> indices;
-		std::get<0>(indices) =
-				address_val >> (std::get<2>(this->address_partition) + std::get<1>(this->address_partition));
-		std::get<1>(indices) =
-				address_val << std::get<0>(this->address_partition)
-							>> (std::get<2>(this->address_partition) + std::get<0>(this->address_partition));
-		std::get<2>(indices) =
-				address_val << (std::get<0>(this->address_partition) + std::get<1>(this->address_partition))
-							>> (std::get<0>(this->address_partition) + std::get<1>(this->address_partition));
-		return indices;
-	}
 
 	[[nodiscard]] uint32_t addressEncode(const std::tuple<uint32_t, uint32_t, uint32_t> &_add_part) {
 		uint32_t address_val = std::get<0>(_add_part);
@@ -76,6 +58,34 @@ private:
 
 
 public:
+	/**
+* Decode a 32-bit Address to 3-fields Index-based Tuple indicating where the Data could be
+* Warning: This function should ONLY be used inside this Cache Class
+* @param address_val Raw 32-bit address
+* @return [Tag Value][Index of Index][Index of Offset]
+*/
+	[[nodiscard]] std::tuple<uint32_t, uint32_t, uint32_t> addressDecode(const uint32_t &address_val) const {
+		std::tuple<uint32_t, uint32_t, uint32_t> indices;
+		std::string address_bit = std::bitset<32>(address_val).to_string();
+		uint32_t bits[3];
+		bits[0] = std::get<0>(this->address_partition);
+		bits[1] = std::get<1>(this->address_partition);
+		bits[2] = std::get<2>(this->address_partition);
+		std::get<0>(indices) = std::bitset<32>(address_bit.substr(0, bits[0])).to_ulong();
+		std::get<1>(indices) = std::bitset<32>(address_bit.substr(bits[0], bits[1])).to_ulong();
+		std::get<2>(indices) = std::bitset<32>(address_bit.substr(bits[1], bits[2])).to_ulong();
+
+/*		std::get<0>(indices) =
+				address_val >> (std::get<2>(this->address_partition) + std::get<1>(this->address_partition));
+		std::get<1>(indices) =
+				address_val << std::get<0>(this->address_partition)
+							>> (std::get<2>(this->address_partition) + std::get<0>(this->address_partition));
+		std::get<2>(indices) =
+				address_val << (std::get<0>(this->address_partition) + std::get<1>(this->address_partition))
+							>> (std::get<0>(this->address_partition) + std::get<1>(this->address_partition));*/
+		return indices;
+	}
+
 	/**
 	 * Check if ALL Data Members Are Initialized, including Cache Array
 	 * @return True if All Initialized, false if At Least One Member if NOT Initialized
@@ -92,13 +102,12 @@ public:
 	 * @param _dirty If dirty bit should been set
 	 * @return True if found and update, false otherwise
 	 */
-	bool updateExistingTag(const uint32_t &_address, const bool &_dirty) {
+	bool updateExistingTag(const uint32_t &_address, const uint64_t &_clock_now, const bool &_dirty) {
 		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
 		for (DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
 			if (this_dataBlock.compareTag(std::get<0>(this_index_tuple))) {
-				this_dataBlock.markDirty(_dirty);
+				this_dataBlock.markDirty(_clock_now, _dirty);
 				hit_miss_count.first++;
-
 				return true;
 			}
 		}
@@ -114,6 +123,9 @@ public:
 				least_used_db = &this_dataBlock;
 		}
 		std::pair<bool, uint32_t> dirty_and_address{least_used_db->getDirty(), least_used_db->getTag()};
+		if (least_used_db->getDirty()) {
+			int i = 0;
+		}
 		least_used_db->flush();
 		return dirty_and_address;
 	}
@@ -257,7 +269,7 @@ public:
 				const DataBlock &this_db = this->cache_array.at(row).at(col);
 				image_writer << "," + std::to_string(this_db.getValid()) +
 								"," + std::to_string(this_db.getDirty()) +
-								"," + std::to_string(this_db.getTag());
+								"," + std::bitset<32>(this_db.getTag()).to_string();
 			}
 			image_writer << std::endl;
 		}

@@ -81,13 +81,14 @@ private:
 			elapsed_clock += memory_latency;//Tag is pseudo found and add memory latency to elapsed clock
 			status = "M_R_SUCCESS";
 		} else {//If this is called by digging into Next Parental Cache (one level below)
-			if (_cache->updateExistingTag(_address, false)) {//if there's a tag match from a set -- READ HIT
-				elapsed_clock += _cache->getLatency();//takes this cache's latency to read
+			elapsed_clock += _cache->getLatency();//takes this cache's latency to read
+			if (_cache->updateExistingTag(_address, elapsed_clock,
+										  false)) {//if there's a tag match from a set -- READ HIT
 				status = "C_R_HIT";
 			} else {//if there's NO tag match from a set -- READ MISS
 				elapsed_clock = readCache(_cache->getParentPtr(), _address,
 										  elapsed_clock);//sum latencies of parents to read
-				if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//if allocation failed (full)
+				if (!_cache->allocateNewTag(_address, elapsed_clock)) {//if allocation failed (full)
 					auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
 					if (poped_db.first) {//if the poped LRU tag is dirty, sync the address with parental cache (write)
 						elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//Write prt
@@ -95,7 +96,7 @@ private:
 					} else {//if the popped LRU tag is non-dirty, discard the poped tag
 						status = "C_R_MISS$ALLOC_FAILED$POPED_CLEAN";
 					}
-					if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock))//try to alloc again after pop
+					if (!_cache->allocateNewTag(_address, elapsed_clock))//try to alloc again after pop
 						throw std::runtime_error("ERR Alloc after Popping failed");
 				} else {//if allocation suceeded without popping
 					status = "C_R_MISS$ALLOC_SUCCESS";
@@ -115,12 +116,13 @@ private:
 			status = "M_W_SUCCESS";
 		} else {//If this is called by digging into Next Parental Cache (one level below)
 			if (read_write_policy == POLICY_WBWA) {//if the policy is write-back and write-allocate
-				if (_cache->updateExistingTag(_address, true)) {//if there's a tag match, then set dirty -- WRITE HIT
-					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
+				elapsed_clock += _cache->getLatency();//takes this cache's latency to write
+				if (_cache->updateExistingTag(_address, elapsed_clock,
+											  true)) {//if there's a tag match, then set dirty -- WRITE HIT
 					status = "C_R_HIT$MARKED_DIRTY$WB";
 				} else {//if there's NO tag match from a set to set dirty-- WRITE MISS
 //TO-DO HERE: Should there be a read from parent cache?
-					if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock)) {//while allocation failed
+					if (!_cache->allocateNewTag(_address, elapsed_clock)) {//while allocation failed
 						auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
 						if (poped_db.first) {//if the poped LRU tag is dirty, write the address with parental cache
 							elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//W Prt
@@ -128,14 +130,15 @@ private:
 						} else {
 							status = "C_W_MISS$ALLOC_FAILED$POP_CLEAN$WB";
 						}
-						if (!_cache->allocateNewTag(_address, clock_count + elapsed_clock))//try to alloc agn after pop
+						if (!_cache->allocateNewTag(_address, elapsed_clock))//try to alloc agn after pop
 							throw std::runtime_error("ERR Alloc after Popping failed");
 					} else {
 						status = "C_W_MISS$ALLOC_SUCCESS$WB";
 					}
 				}
 			} else if (read_write_policy == POLICY_WTNWA) {//if the policy is write-thru and non-write allocate
-				if (_cache->updateExistingTag(_address, false)) {//if there's a tag match, no need dirty-- WRITE HIT
+				if (_cache->updateExistingTag(_address, elapsed_clock,
+											  false)) {//if there's a tag match, no need dirty-- WRITE HIT
 					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
 					status = "C_W_HIT$WT";
 				} else {//if there's NO tag match from a set - WRITE MISS
@@ -151,29 +154,54 @@ private:
 	void reportReturn(const uint64_t &_time, Cache *_cache, const std::string &_oper, const uint32_t &_address,
 					  const std::string &_status) {
 		std::string cache = _cache == nullptr ? "MEM" : ("L" + std::to_string(_cache->getId()));
+		if (report_writer.second == 0)
+			throw std::runtime_error("ERR Tab Count Less than 0");
+		report_writer.second--;
 		std::string front_dashes;
 		for (size_t i = 0; i < this->report_writer.second; i++) front_dashes += "\t";
 		report_writer.first
 				<< front_dashes
-				<< "} <--"
-/*				<< cache << "::"
-				<< _oper << "("
-				<< _address << ")->"*/
+				<< "}"
+				<< _time
+				<< "<--"
+				/*				<< cache << "::"
+								<< _oper << "("
+								<< _address << ")->"*/
 				<< _status << std::endl;
-		if (report_writer.second == 0)
-			throw std::runtime_error("ERR Tab Count Less than 0");
-		report_writer.second--;
+
 	}
 
 	void reportCall(const uint64_t &_time, Cache *_cache, const std::string &_oper, const uint32_t &_address) {
 		std::string cache = _cache == nullptr ? "MEM" : ("L" + std::to_string(_cache->getId()));
+		auto decoded_address =
+				_cache == nullptr ? std::tuple<uint32_t, uint32_t, uint32_t>{0, 0, 0} : _cache->addressDecode(_address);
 		std::string front_dashes;
 		for (size_t i = 0; i < this->report_writer.second; i++) front_dashes += "\t";
+		std::string first_bin, second_bin, third_bin;
+		first_bin = std::bitset<32>(std::get<0>(decoded_address)).to_string();
+		second_bin = std::bitset<32>(std::get<1>(decoded_address)).to_string();
+		third_bin = std::bitset<32>(std::get<2>(decoded_address)).to_string();
+		third_bin.erase(0, std::min(third_bin.find_first_not_of('0'), third_bin.size() - 1));
 		report_writer.first
 				<< front_dashes
 				<< _time << "->"
 				<< cache << "::"
-				<< _oper << "("
+				<< _oper << "({";
+		report_writer.first
+				<< std::get<0>(decoded_address) << "(";
+		first_bin.erase(0, std::min(first_bin.find_first_not_of('0'), first_bin.size() - 1));
+		report_writer.first
+				<< first_bin << "):";
+		report_writer.first
+				<< std::get<1>(decoded_address) << "(";
+		second_bin.erase(0, std::min(second_bin.find_first_not_of('0'), second_bin.size() - 1));
+		report_writer.first
+				<< second_bin << "):";
+		report_writer.first
+				<< std::get<2>(decoded_address) << "(";
+		third_bin.erase(0, std::min(third_bin.find_first_not_of('0'), third_bin.size() - 1));
+		report_writer.first
+				<< third_bin << ")}="
 				<< _address << "){"
 				<< std::endl;
 		report_writer.second++;
@@ -235,7 +263,7 @@ public:
 			this_cache_ptr->setId(i);
 		}
 		this->ready.at(3) = true;
-		this->report_writer.first.open("log_system.txt");
+		this->report_writer.first.open("log_system.lgs");
 		this->ready.at(5) = true;
 		return true;
 	}
@@ -422,14 +450,14 @@ public:
  * hat
  * Stop Fetching Instruction
  * @return ALWAYS TRUE
- */
+ *//*
 	bool haltProgram(std::tuple<uint32_t, uint32_t, uint32_t> *_arguments) {
 		if (_arguments == nullptr)
 			throw std::runtime_error("ERR Argument Tuple is NULL");
 		uint32_t _arrive_time = std::get<0>(*_arguments);
 		task_queue.emplace_back(task_t::task_halt, 0, _arrive_time);
 		return false;
-	}
+	}*/
 
 	void runTaskQueue() {
 		auto current_task_ptr = this->task_queue.begin();
@@ -441,17 +469,18 @@ public:
 				if (this_task == task_t::task_halt) {
 					report_writer.first.close();
 					return;
-				} else if (this_task == task_t::task_readAddress)
-					clock_count = this->readCache(this->top_cache_ptr.get(), this_value, clock_count);
-				else if (this_task == task_t::task_writeAddress)
-					clock_count = this->writeCache(this->top_cache_ptr.get(), this_value, clock_count);
-				else if (this_task == task_t::task_reportHitMiss)
+				} else if (this_task == task_t::task_reportHitMiss)
 					this->getCacheAtPtr(this_value)->printHitMissRate(this_arrive_time);
 				else if (this_task == task_t::task_reportImage)
 					this->getCacheAtPtr(this_value)->printCacheImage(this_arrive_time);
+				else if (this_task == task_t::task_readAddress)
+					clock_count = this->readCache(this->top_cache_ptr.get(), this_value, clock_count);
+				else if (this_task == task_t::task_writeAddress)
+					clock_count = this->writeCache(this->top_cache_ptr.get(), this_value, clock_count);
 				current_task_ptr++;
 			} else clock_count++;
 		}
+		report_writer.first.close();
 	}
 
 };

@@ -23,7 +23,17 @@ public:
 	bool operator<(const Task &_task) const {
 		if (!ready)
 			throw std::runtime_error("ERR Cannot Sort Task - Not Ready");
-		return this->arrive_time < _task.arrive_time;
+		auto my_t = this->task_type;
+		auto his_t = _task.getTaskType();
+		if ((my_t == task_t::task_readAddress || my_t == task_t::task_writeAddress) &&
+			(his_t == task_t::task_reportImage || his_t == task_t::task_reportHitMiss)) {
+			return false;
+		} else if ((his_t == task_t::task_readAddress || his_t == task_t::task_writeAddress) &&
+				   (my_t == task_t::task_reportImage || my_t == task_t::task_reportHitMiss)) {
+			return true;
+		} else {
+			return this->arrive_time < _task.arrive_time;
+		}
 	}
 
 	[[nodiscard]] task_t getTaskType() const {

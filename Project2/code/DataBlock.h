@@ -26,8 +26,12 @@ public:
 	 * @return
 	 */
 	DataBlock &operator=(const DataBlock &_data_block) {
-		this->valid = _data_block.valid;
-		this->tag = _data_block.tag;
+		this->valid = _data_block.getValid();
+		this->dirty = _data_block.getDirty();
+		if (_data_block.getDirty() == true) {
+			int i = 0;
+		}
+		this->tag = _data_block.getTag();
 		this->block_size = _data_block.block_size;
 		this->last_use = _data_block.last_use;
 		return *this;
@@ -70,9 +74,9 @@ public:
 	 * Mark this DataBlock Dirty
 	 * Meaning this DataBlock needs to sync with parents
 	 */
-	void markDirty(const uint64_t &_clock_time) {
+	void markDirty(const uint64_t &_clock_time,const bool& _ifDirty) {
 		this->last_use = _clock_time;
-		this->dirty = true;
+		this->dirty = _ifDirty;
 	}
 
 	/**
