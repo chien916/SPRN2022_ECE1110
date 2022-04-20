@@ -15,41 +15,27 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6fd31d6a-bd5e-48ca-8393-a803f6ecc3bd" name="Default Changelist" comment="nnew update">
+    <list default="true" id="6fd31d6a-bd5e-48ca-8393-a803f6ecc3bd" name="Default Changelist" comment="LRU Functionalities">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cache.h" beforeDir="false" afterPath="$PROJECT_DIR$/Cache.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DataBlock.h" beforeDir="false" afterPath="$PROJECT_DIR$/DataBlock.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Task.h" beforeDir="false" afterPath="$PROJECT_DIR$/Task.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/System.h" beforeDir="false" afterPath="$PROJECT_DIR$/System.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/main.cpp.gcda" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/main.cpp.gcda" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/main.cpp.gcno" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/main.cpp.gcno" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/main.cpp.obj" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/main.cpp.obj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/objects.a" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/CMakeFiles/code.dir/objects.a" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/Testing/Temporary/LastTest.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/code.exe" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/code.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_1.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_1.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10000.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10000.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10003.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10005.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10005.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10007.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10007.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10009.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10009.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10011.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10011.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10100.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10100.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10105.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_10105.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11000.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11000.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11001.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11001.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11003.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11005.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11005.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11007.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_11007.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12000.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12000.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12001.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12001.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12003.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12005.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12005.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12007.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_12007.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_13.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_13.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_13003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_13003.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_14.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_14.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_15.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_15.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_16.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_16.csv" afterDir="false" />
@@ -77,30 +63,19 @@
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_7.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_7.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_8.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_8.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_9.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l1_9.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_1.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_1.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10000.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10000.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10003.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10005.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10005.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10007.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10007.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10009.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10009.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10011.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10011.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10100.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10100.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10105.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_10105.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11000.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11000.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11001.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11001.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11003.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11005.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11005.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11007.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_11007.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12000.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12000.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12001.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12001.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12003.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12005.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12005.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12007.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_12007.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_13.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_13.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_13003.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_13003.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_14.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_14.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_15.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_15.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_16.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_16.csv" afterDir="false" />
@@ -129,9 +104,6 @@
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_8.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_8.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_9.csv" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/img_l2_9.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/log_system.lgs" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug-mingw-coverage/log_system.lgs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../instr_tutorial.mlx" beforeDir="false" afterPath="$PROJECT_DIR$/../instr_tutorial.mlx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tc_example_ins.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../tc_example_ins.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tc_example_raw.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../tc_example_raw.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -228,7 +200,7 @@
       <workItem from="1650372209332" duration="192000" />
       <workItem from="1650385931699" duration="21765000" />
       <workItem from="1650425441033" duration="56000" />
-      <workItem from="1650425582633" duration="2217000" />
+      <workItem from="1650425582633" duration="4138000" />
     </task>
     <task id="LOCAL-00001" summary="Cache Javadocs finished">
       <created>1650056315287</created>
@@ -419,7 +391,14 @@
       <option name="project" value="LOCAL" />
       <updated>1650426202453</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="LRU Functionalities">
+      <created>1650428044966</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1650428044966</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -458,20 +437,16 @@
     <MESSAGE value="Fix" />
     <MESSAGE value="update" />
     <MESSAGE value="nnew update" />
-    <option name="LAST_COMMIT_MESSAGE" value="nnew update" />
+    <MESSAGE value="LRU Functionalities" />
+    <option name="LAST_COMMIT_MESSAGE" value="LRU Functionalities" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/System.h</url>
-          <line>119</line>
+          <line>126</line>
           <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/System.h</url>
-          <line>93</line>
-          <option name="timeStamp" value="70" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/DataBlock.h</url>
@@ -485,12 +460,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/System.h</url>
-          <line>174</line>
+          <line>196</line>
           <option name="timeStamp" value="93" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/System.h</url>
-          <line>403</line>
+          <line>425</line>
           <option name="timeStamp" value="98" />
         </line-breakpoint>
       </breakpoints>

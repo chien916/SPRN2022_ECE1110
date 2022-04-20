@@ -80,30 +80,36 @@ private:
 		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
 			elapsed_clock += memory_latency;//Tag is pseudo found and add memory latency to elapsed clock
 			status = "M_R_SUCCESS";
+			reportReturn(elapsed_clock, _cache, "READ", _address, status, false);
 		} else {//If this is called by digging into Next Parental Cache (one level below)
-			elapsed_clock += _cache->getLatency();//takes this cache's latency to read
 			if (_cache->updateExistingTag(_address, elapsed_clock,
 										  false)) {//if there's a tag match from a set -- READ HIT
 				status = "C_R_HIT";
+				reportReturn(elapsed_clock, _cache, "READ", _address, status, false);
 			} else {//if there's NO tag match from a set -- READ MISS
+				reportReturn(elapsed_clock, _cache, "READ", _address, "C_R_MISS$GENERAL", false);
 				elapsed_clock = readCache(_cache->getParentPtr(), _address,
 										  elapsed_clock);//sum latencies of parents to read
 				if (!_cache->allocateNewTag(_address, elapsed_clock)) {//if allocation failed (full)
 					auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
 					if (poped_db.first) {//if the poped LRU tag is dirty, sync the address with parental cache (write)
-						elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//Write prt
 						status = "C_R_MISS$ALLOC_FAILED$POPED_DIRTY";
+						reportReturn(elapsed_clock, _cache, "READ", _address, status, false);
+						elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//Write prt
 					} else {//if the popped LRU tag is non-dirty, discard the poped tag
 						status = "C_R_MISS$ALLOC_FAILED$POPED_CLEAN";
+						reportReturn(elapsed_clock, _cache, "READ", _address, status, false);
 					}
 					if (!_cache->allocateNewTag(_address, elapsed_clock))//try to alloc again after pop
 						throw std::runtime_error("ERR Alloc after Popping failed");
 				} else {//if allocation suceeded without popping
 					status = "C_R_MISS$ALLOC_SUCCESS";
+					reportReturn(elapsed_clock, _cache, "READ", _address, status, false);
 				}
 			}
+			elapsed_clock += _cache->getLatency();//takes this cache's latency to read
 		}
-		reportReturn(elapsed_clock, _cache, "READ", _address, status);
+		reportReturn(elapsed_clock, _cache, "READ", _address, status, true);
 		return elapsed_clock;
 	}
 
@@ -112,62 +118,78 @@ private:
 		std::string status{""};
 		uint64_t elapsed_clock{_clock_when_called};//elapsed clock cycles default is 0
 		if (_cache == nullptr) {//If this is called by digging into Memory (bottom)
-			elapsed_clock += memory_latency;//Tag is pseudo written and add memory latency to elapsed clock
 			status = "M_W_SUCCESS";
+			reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
+			elapsed_clock += memory_latency;//Tag is pseudo written and add memory latency to elapsed clock
 		} else {//If this is called by digging into Next Parental Cache (one level below)
 			if (read_write_policy == POLICY_WBWA) {//if the policy is write-back and write-allocate
 				elapsed_clock += _cache->getLatency();//takes this cache's latency to write
 				if (_cache->updateExistingTag(_address, elapsed_clock,
 											  true)) {//if there's a tag match, then set dirty -- WRITE HIT
 					status = "C_R_HIT$MARKED_DIRTY$WB";
+					reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
 				} else {//if there's NO tag match from a set to set dirty-- WRITE MISS
 //TO-DO HERE: Should there be a read from parent cache?
 					if (!_cache->allocateNewTag(_address, elapsed_clock)) {//while allocation failed
 						auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
 						if (poped_db.first) {//if the poped LRU tag is dirty, write the address with parental cache
-							elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//W Prt
 							status = "C_W_MISS$ALLOC_FAILED$POP_DIRTY$WB";
+							reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
+							elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//W Prt
 						} else {
 							status = "C_W_MISS$ALLOC_FAILED$POP_CLEAN$WB";
+							reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
 						}
 						if (!_cache->allocateNewTag(_address, elapsed_clock))//try to alloc agn after pop
 							throw std::runtime_error("ERR Alloc after Popping failed");
 					} else {
 						status = "C_W_MISS$ALLOC_SUCCESS$WB";
+						reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
 					}
 				}
 			} else if (read_write_policy == POLICY_WTNWA) {//if the policy is write-thru and non-write allocate
 				if (_cache->updateExistingTag(_address, elapsed_clock,
 											  false)) {//if there's a tag match, no need dirty-- WRITE HIT
-					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
+
 					status = "C_W_HIT$WT";
+					reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
+					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
 				} else {//if there's NO tag match from a set - WRITE MISS
-					elapsed_clock = writeCache(_cache->getParentPtr(), _address, elapsed_clock);//just write in parent.
+
 					status = "C_W_MISS$PROPAGATE$WT";
+					reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
+					elapsed_clock = writeCache(_cache->getParentPtr(), _address, elapsed_clock);//just write in parent.
 				}
 			}
 		}
-		reportReturn(elapsed_clock, _cache, "WRITE", _address, status);
+		reportReturn(elapsed_clock, _cache, "WRITE", _address, status, true);
 		return elapsed_clock;
 	}
 
 	void reportReturn(const uint64_t &_time, Cache *_cache, const std::string &_oper, const uint32_t &_address,
-					  const std::string &_status) {
+					  const std::string &_status, const bool &_go_back) {
 		std::string cache = _cache == nullptr ? "MEM" : ("L" + std::to_string(_cache->getId()));
 		if (report_writer.second == 0)
 			throw std::runtime_error("ERR Tab Count Less than 0");
-		report_writer.second--;
+		if (_go_back)
+			report_writer.second--;
 		std::string front_dashes;
 		for (size_t i = 0; i < this->report_writer.second; i++) front_dashes += "\t";
 		report_writer.first
-				<< front_dashes
-				<< "}"
+				<< front_dashes;
+		if (_go_back)
+			report_writer.first
+					<< "}";
+		else
+			report_writer.first
+					<< "↓[";
+		report_writer.first
 				<< _time
-				<< "<--"
+				<< "←"
 				/*				<< cache << "::"
 								<< _oper << "("
 								<< _address << ")->"*/
-				<< _status << std::endl;
+				<< _status << (_go_back ? "" : "]") << std::endl;
 
 	}
 
@@ -184,7 +206,7 @@ private:
 		third_bin.erase(0, std::min(third_bin.find_first_not_of('0'), third_bin.size() - 1));
 		report_writer.first
 				<< front_dashes
-				<< _time << "->"
+				<< _time << "→"
 				<< cache << "::"
 				<< _oper << "({";
 		report_writer.first
