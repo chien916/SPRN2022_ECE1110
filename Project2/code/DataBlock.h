@@ -53,12 +53,13 @@ public:
 	 * Update this DataBlock with new tag value, make it valid, and record current time
 	 * @param _tag New tag value to be assigned to this DataBlock
 	 */
-	void update(const uint32_t &_tag, const uint64_t &_clock_time) {
+	void update(const uint32_t &_tag, const bool &_dirty, const uint64_t &_clock_time) {
 		if (this->valid != 0)
 			std::runtime_error("ERR Datablock Cannot Update before Flushing");
 		this->valid = true;
 		this->tag = _tag;
 		this->last_use = _clock_time;
+		this->dirty = _dirty;
 	}
 
 	/**

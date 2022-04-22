@@ -51,8 +51,8 @@ private:
 
 	[[nodiscard]] uint32_t addressEncode(const std::tuple<uint32_t, uint32_t, uint32_t> &_add_part) {
 		uint32_t address_val = std::get<0>(_add_part);
-		address_val = (address_val << std::get<1>(this->address_partition)) + std::get<1>(_add_part);;
-		address_val = (address_val << std::get<2>(this->address_partition)) + std::get<2>(_add_part);;
+		address_val = (address_val << std::get<1>(this->address_partition)) + std::get<1>(_add_part);
+		address_val = (address_val << std::get<2>(this->address_partition)) + std::get<2>(_add_part);
 		return address_val;
 	}
 
@@ -122,7 +122,9 @@ public:
 			if (this_dataBlock < (*least_used_db))
 				least_used_db = &this_dataBlock;
 		}
-		std::pair<bool, uint32_t> dirty_and_address{least_used_db->getDirty(), least_used_db->getTag()};
+		std::tuple<uint32_t, uint32_t, uint32_t> parted_address
+				{least_used_db->getTag(), std::get<1>(this_index_tuple), std::get<2>(this_index_tuple)};
+		std::pair<bool, uint32_t> dirty_and_address{least_used_db->getDirty(), addressEncode(parted_address)};
 		if (least_used_db->getDirty()) {
 			int i = 0;
 		}
@@ -130,11 +132,11 @@ public:
 		return dirty_and_address;
 	}
 
-	bool allocateNewTag(const uint32_t &_address, const uint64_t &_clock_time) {
+	bool allocateNewTag(const uint32_t &_address, const bool &_dirty, const uint64_t &_clock_time) {
 		std::tuple<uint32_t, uint32_t, uint32_t> this_index_tuple = addressDecode(_address);
 		for (DataBlock &this_dataBlock: cache_array.at(std::get<1>(this_index_tuple))) {
 			if (!this_dataBlock.getValid()) {
-				this_dataBlock.update(std::get<0>(this_index_tuple), _clock_time);
+				this_dataBlock.update(std::get<0>(this_index_tuple), _dirty, _clock_time);
 				return true;
 			}
 		}
@@ -253,7 +255,8 @@ public:
 	}
 
 	void printCacheImage(const uint64_t &_arrive_time) {
-		std::string image_name = "img_l" + std::to_string(this->cache_id) + "_" + std::to_string(_arrive_time) + ".csv";
+		std::string image_name =
+				"img_l" + std::to_string(this->cache_id) + "_" + std::to_string(_arrive_time) + ".csv";
 		std::ofstream image_writer{image_name};
 		//Print Titles
 		image_writer << "B_IND";
@@ -270,7 +273,7 @@ public:
 				const DataBlock &this_db = this->cache_array.at(row).at(col);
 				image_writer << "," + std::to_string(this_db.getValid()) +
 								"," + std::to_string(this_db.getDirty()) +
-								"," + std::bitset<32>(this_db.getTag()).to_string() +
+								"," + std::to_string(this_db.getTag()) +
 								"," + std::to_string(this_db.getLastUse());
 			}
 			image_writer << std::endl;

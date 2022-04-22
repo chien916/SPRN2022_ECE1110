@@ -90,17 +90,17 @@ private:
 				reportReturn(elapsed_clock, _cache, "READ", _address, "C_R_MISS$GENERAL", false);
 				elapsed_clock = readCache(_cache->getParentPtr(), _address,
 										  elapsed_clock);//sum latencies of parents to read
-				if (!_cache->allocateNewTag(_address, elapsed_clock)) {//if allocation failed (full)
+				if (!_cache->allocateNewTag(_address, false, elapsed_clock)) {//if allocation failed (full)
 					auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
 					if (poped_db.first) {//if the poped LRU tag is dirty, sync the address with parental cache (write)
-						status = "C_R_MISS$ALLOC_FAILED$POPED_DIRTY";
+						status = "C_R_MISS$ALLOC_FAILED$POP_DIRTY";
 						reportReturn(elapsed_clock, _cache, "READ", _address, status, false);
 						elapsed_clock = writeCache(_cache->getParentPtr(), poped_db.second, elapsed_clock);//Write prt
 					} else {//if the popped LRU tag is non-dirty, discard the poped tag
-						status = "C_R_MISS$ALLOC_FAILED$POPED_CLEAN";
+						status = "C_R_MISS$ALLOC_FAILED$POP_CLEAN";
 						reportReturn(elapsed_clock, _cache, "READ", _address, status, false);
 					}
-					if (!_cache->allocateNewTag(_address, elapsed_clock))//try to alloc again after pop
+					if (!_cache->allocateNewTag(_address, false, elapsed_clock))//try to alloc again after pop
 						throw std::runtime_error("ERR Alloc after Popping failed");
 				} else {//if allocation suceeded without popping
 					status = "C_R_MISS$ALLOC_SUCCESS";
@@ -130,7 +130,7 @@ private:
 					reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
 				} else {//if there's NO tag match from a set to set dirty-- WRITE MISS
 //TO-DO HERE: Should there be a read from parent cache?
-					if (!_cache->allocateNewTag(_address, elapsed_clock)) {//while allocation failed
+					if (!_cache->allocateNewTag(_address, true, elapsed_clock)) {//while allocation failed
 						auto poped_db = _cache->popFlushLRUTag(_address);//pop LRU tag and flush LRU field
 						if (poped_db.first) {//if the poped LRU tag is dirty, write the address with parental cache
 							status = "C_W_MISS$ALLOC_FAILED$POP_DIRTY$WB";
@@ -140,7 +140,7 @@ private:
 							status = "C_W_MISS$ALLOC_FAILED$POP_CLEAN$WB";
 							reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
 						}
-						if (!_cache->allocateNewTag(_address, elapsed_clock))//try to alloc agn after pop
+						if (!_cache->allocateNewTag(_address, true, elapsed_clock))//try to alloc agn after pop
 							throw std::runtime_error("ERR Alloc after Popping failed");
 					} else {
 						status = "C_W_MISS$ALLOC_SUCCESS$WB";
@@ -150,12 +150,10 @@ private:
 			} else if (read_write_policy == POLICY_WTNWA) {//if the policy is write-thru and non-write allocate
 				if (_cache->updateExistingTag(_address, elapsed_clock,
 											  false)) {//if there's a tag match, no need dirty-- WRITE HIT
-
 					status = "C_W_HIT$WT";
 					reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
 					elapsed_clock += _cache->getLatency();//takes this cache's latency to write
 				} else {//if there's NO tag match from a set - WRITE MISS
-
 					status = "C_W_MISS$PROPAGATE$WT";
 					reportReturn(elapsed_clock, _cache, "WRITE", _address, status, false);
 					elapsed_clock = writeCache(_cache->getParentPtr(), _address, elapsed_clock);//just write in parent.
@@ -287,6 +285,12 @@ public:
 		this->ready.at(3) = true;
 		this->report_writer.first.open("log_system.lgs");
 		this->ready.at(5) = true;
+		std::cout
+				<< "con "
+				<< std::setw(10) << std::left << _cache_count
+				<< std::setw(10) << std::left << _block_size
+				<< std::setw(10) << std::left << _policy_num
+				<< std::endl;
 		return true;
 	}
 
@@ -314,6 +318,12 @@ public:
 		if (this_cache_ptr->operator bool())
 			throw std::invalid_argument("ERR scd called after inc");
 		this_cache_ptr->setParam(block_size, _total_size, _set_assoc);
+		std::cout
+				<< "scd "
+				<< std::setw(10) << std::left << _cache_level
+				<< std::setw(10) << std::left << _total_size
+				<< std::setw(10) << std::left << _set_assoc
+				<< std::endl;
 		return true;
 	}
 
@@ -337,6 +347,11 @@ public:
 		if (this_cache->operator bool())
 			throw std::invalid_argument("ERR scl called after inc");
 		this_cache->setLatency(_latency);
+		std::cout
+				<< "scl "
+				<< std::setw(10) << std::left << _cache_level
+				<< std::setw(10) << std::left << _latency
+				<< std::endl;
 		return true;
 	}
 
@@ -356,6 +371,10 @@ public:
 		uint32_t _latency = std::get<0>(*_arguments);
 		this->memory_latency = _latency;
 		this->ready.at(4) = true;
+		std::cout
+				<< "sml "
+				<< std::setw(10) << std::left << _latency
+				<< std::endl;
 		return true;
 	}
 
@@ -375,6 +394,10 @@ public:
 		if (_cache_level > this->cache_count) return false;
 		Cache *this_cache_ptr = this->getCacheAtPtr(_cache_level);
 		this_cache_ptr->initCacheArray();
+		std::cout
+				<< "inc "
+				<< std::setw(10) << std::left << _cache_level
+				<< std::endl;
 		return true;
 	}
 
@@ -393,6 +416,11 @@ public:
 		uint32_t _address = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
 		this->task_queue.emplace_back(task_t::task_readAddress, _address, _arrive_time);
+		std::cout
+				<< "tre "
+				<< std::setw(10) << std::left << _address
+				<< std::setw(10) << std::left << _arrive_time
+				<< std::endl;
 		return true;
 	}
 
@@ -411,6 +439,11 @@ public:
 		uint32_t _address = std::get<0>(*_arguments);
 		uint32_t _arrive_time = std::get<1>(*_arguments);
 		this->task_queue.emplace_back(task_t::task_writeAddress, _address, _arrive_time);
+		std::cout
+				<< "twr "
+				<< std::setw(10) << std::left << _address
+				<< std::setw(10) << std::left << _arrive_time
+				<< std::endl;
 		return true;
 	}
 
@@ -427,6 +460,9 @@ public:
 		if (!this->operator bool())
 			throw std::runtime_error("ERR System Cannot Initialize - System Not Ready");
 		runTaskQueue();
+		std::cout
+				<< "ins "
+				<< std::endl;
 		return true;
 	}
 
@@ -446,6 +482,11 @@ public:
 		uint32_t _arrive_time = std::get<1>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		this->task_queue.emplace_back(task_t::task_reportHitMiss, _cache_level, _arrive_time);
+		std::cout
+				<< "pcr "
+				<< std::setw(10) << std::left << _cache_level
+				<< std::setw(10) << std::left << _arrive_time
+				<< std::endl;
 		return true;
 	}
 
@@ -465,6 +506,11 @@ public:
 		uint32_t _arrive_time = std::get<1>(*_arguments);
 		if (_cache_level > this->cache_count) return false;
 		this->task_queue.emplace_back(task_t::task_reportImage, _cache_level, _arrive_time);
+		std::cout
+				<< "pci "
+				<< std::setw(10) << std::left << _cache_level
+				<< std::setw(10) << std::left << _arrive_time
+				<< std::endl;
 		return true;
 	}
 
@@ -495,10 +541,13 @@ public:
 					this->getCacheAtPtr(this_value)->printHitMissRate(this_arrive_time);
 				else if (this_task == task_t::task_reportImage)
 					this->getCacheAtPtr(this_value)->printCacheImage(this_arrive_time);
-				else if (this_task == task_t::task_readAddress)
+				else if (this_task == task_t::task_readAddress) {
 					clock_count = this->readCache(this->top_cache_ptr.get(), this_value, clock_count);
-				else if (this_task == task_t::task_writeAddress)
+					report_writer.first << std::endl;
+				} else if (this_task == task_t::task_writeAddress) {
 					clock_count = this->writeCache(this->top_cache_ptr.get(), this_value, clock_count);
+					report_writer.first << std::endl;
+				}
 				current_task_ptr++;
 			} else clock_count++;
 		}

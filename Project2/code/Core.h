@@ -64,6 +64,9 @@ class Core {
 			try {
 				this_instruction = this->getNextInstruction();
 				if (this_instruction.first == "hat") {
+					std::cout
+							<< "hat "
+							<< std::endl;
 					return;
 				}
 				this_system_function = instruction_map.at(this_instruction.first);
